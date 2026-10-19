@@ -1,3 +1,9 @@
+BIND      ?= 192.168.1.125
+BROADCAST ?= 192.168.1.255:60000
+LISTEN    ?= 192.168.1.125:60001
+
+CLI = cd examples/cli && cargo fmt && cargo run -- --debug --bind $(BIND) --broadcast $(BROADCAST) --listen $(LISTEN)
+
 clean:
 	@echo "Nothing to do
 
@@ -8,7 +14,7 @@ update:
 	@echo "Nothing to do
 
 format:
-	@echo "Nothing to do
+	cd uhppoted && cargo fmt
 
 build:
 	cd uhppoted && cargo build
@@ -34,5 +40,5 @@ package: release
 publish: release
 	@echo "Nothing to do
 
-debug:
-	@echo "Nothing to do
+debug: build
+	$(CLI) find-controllers

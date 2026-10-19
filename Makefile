@@ -5,7 +5,7 @@ LISTEN    ?= 192.168.1.125:60001
 CLI = cd examples/cli && cargo fmt && cargo run -- --debug --bind $(BIND) --broadcast $(BROADCAST) --listen $(LISTEN)
 
 clean:
-	@echo "Nothing to do
+	cargo clean
 
 generate:
 	@echo "Nothing to do
@@ -14,10 +14,10 @@ update:
 	@echo "Nothing to do
 
 format:
-	cd uhppoted && cargo fmt
+	cargo fmt --package uhppoted
 
-build:
-	cd uhppoted && cargo build
+build: format
+	cargo build --package uhppoted
 
 test:
 	@echo "Nothing to do

@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "uhppoted",
+    "examples/cli"
+]
+
+resolver = "2"

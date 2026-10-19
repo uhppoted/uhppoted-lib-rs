@@ -74,7 +74,7 @@ fn main() -> ExitCode {
 
 fn usage() {
     println!();
-    println!("  Usage: uhppoted [--debug] [--bind <address>] [--broadcast <address>] [commands]");
+    println!("  Usage: cli [--debug] [--bind <address>] [--broadcast <address>] [commands]");
     println!();
     println!("    Options:");
     println!("    --debug                prints sent and received UDP packets to stdout");

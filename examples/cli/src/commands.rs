@@ -1,3 +1,5 @@
+use uhppoted;
+
 pub const COMMANDS: [&Command; 1] = [&Command {
     name: "find-controllers",
     func: find_controllers,
@@ -16,7 +18,5 @@ impl Command {
 }
 
 fn find_controllers() {
-    println!();
-    println!("------ >> find controllers");
-    println!();
+    uhppoted::find_controllers();
 }

@@ -28,8 +28,8 @@ lint:
 integration-tests: build
 	@echo "Nothing to do
 
-build-all:
-	@echo "Nothing to do
+build-all: build
+	cd examples/cli && cargo fmt && cargo build
 
 release:
 	@echo "Nothing to do

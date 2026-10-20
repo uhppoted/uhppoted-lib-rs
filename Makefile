@@ -17,7 +17,7 @@ format:
 	cargo fmt --package uhppoted
 
 build: format
-	mkdir -p src/generated
+	mkdir -p uhppoted/src/generated
 	cargo build --package uhppoted
 
 test: 

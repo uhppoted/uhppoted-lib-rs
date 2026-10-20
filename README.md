@@ -19,6 +19,7 @@ _In Development_
 Requirements:
 - rustc 1.99.1+
 - cargo 1.99.1+
+- clippy 0.0.302+
 
 
 ### Building from source

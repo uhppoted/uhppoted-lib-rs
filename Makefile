@@ -8,10 +8,10 @@ clean:
 	cargo clean
 
 generate:
-	@echo "Nothing to do
+	cd .codegen && make generate
 
 update:
-	@echo "Nothing to do
+	cargo update
 
 format:
 	cargo fmt --package uhppoted
@@ -19,16 +19,16 @@ format:
 build: format
 	cargo build --package uhppoted
 
-test:
-	@echo "Nothing to do
+test: 
+	cargo test
 
 lint:
-	@echo "Nothing to do
+	cargo clippy
 
 integration-tests: build
 	@echo "Nothing to do
 
-build-all: build
+build-all: build test lint
 	cd examples/cli && cargo fmt && cargo build
 
 release:

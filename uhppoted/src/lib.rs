@@ -1,18 +1,23 @@
+#[path = "encode.rs"]
+pub mod encode;
+
+#[path = "net.rs"]
+pub mod net;
+
+#[path = "error.rs"]
+pub mod error;
+
 pub fn find_controllers() -> u64 {
-    println!();
-    println!("------ >> find controllers");
-    println!();
-    
-    return 0;
+    if let Ok(request) = encode::get_controller_request(0) {
+        net::dump(&request);
+    }
+
+    0
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    // #[test]
-    // fn it_works() {
-    //     let result = add(2, 2);
-    //     assert_eq!(result, 4);
-    // }
+mod generated_tests {
+    // use super::*;
+    // include!(concat!(env!("OUT_DIR"), "/generated_tests.rs"));
+    include!("generated/generated_tests.rs");
 }

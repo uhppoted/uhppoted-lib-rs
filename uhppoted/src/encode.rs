@@ -40,8 +40,9 @@ mod tests {
     }
 }
 
+#[cfg(test)]
 mod generated_tests {
-    // use super::*;
-    // include!(concat!(env!("OUT_DIR"), "/generated_tests.rs"));
-    include!("generated/generated_tests.rs");
+    use super::*;
+
+    include!("generated/encode_tests.rs");
 }

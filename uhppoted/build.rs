@@ -1,28 +1,53 @@
-// use std::env;
 use std::fs;
 use std::path::Path;
 
+use serde::Deserialize;
+
+#[derive(Deserialize, Debug)]
+struct Tests {
+    #[serde(rename(deserialize = "tests"))]
+    _tests: Vec<Test>,
+}
+
+#[derive(Deserialize, Debug)]
+struct Test {
+    #[serde(rename(deserialize = "test"))]
+    _test: String,
+}
+
 fn main() {
-    println!("cargo:warning=*** CODE GENERATION ***");
-    // let out_dir = env::var("OUT_DIR").unwrap();
-    // let dest_path = Path::new(&out_dir).join("generated_tests.rs");
+    // ... parse model files
+    let json = fs::read_to_string("../.codegen/generated/encode.json").unwrap();
+    let deserialized: Tests = serde_json::from_str(&json).unwrap();
 
-    let dest_path = Path::new("src/generated/generated_tests.rs");
+    println!("cargo:warning=... tests {:?}", deserialized);
 
-    let generated_code = r#"
-        #[test]
-        fn test_generated_case() {
-            assert_eq!(2 * 2, 4);
-        }
+    // ... generate encode tests
+    let file = Path::new("src/generated/encode_tests.rs");
+
+    let generated = r#"
+    #[test]
+    fn find_controllers() {
+        let expected: Msg = [
+            0x17, 0x94, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let result = get_controller_request(0).unwrap();
+
+        assert_eq!(result, expected);
+    }
     "#;
 
-    // println!("cargo:warning=*** CODE GENERATION *** {}", out_dir);
     println!(
-        "cargo:warning=*** CODE GENERATION *** {}",
-        dest_path.display()
+        "cargo:warning=... generating encode unit tests {}",
+        file.display()
     );
 
-    fs::write(dest_path, generated_code).unwrap();
+    fs::write(file, generated).unwrap();
 
     println!("cargo:rerun-if-changed=build.rs");
 }

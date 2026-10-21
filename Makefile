@@ -2,7 +2,7 @@ BIND      ?= 192.168.1.125
 BROADCAST ?= 192.168.1.255:60000
 LISTEN    ?= 192.168.1.125:60001
 
-CLI = cd examples/cli && cargo fmt && cargo run -- --debug --bind $(BIND) --broadcast $(BROADCAST) --listen $(LISTEN)
+CLI = cd examples/cli && cargo fmt && RUST_LOG=debug cargo run -- --debug --bind $(BIND) --broadcast $(BROADCAST) --listen $(LISTEN)
 
 clean:
 	cargo clean
@@ -21,15 +21,15 @@ build: format
 	cargo build --package uhppoted
 
 test: 
-	cargo test
+	cargo test --lib
 
 lint:
 	cargo clippy
 
 integration-tests: build
-	@echo "Nothing to do
+	cargo test
 
-build-all: build test lint
+build-all: build test lint integration-tests
 	cd examples/cli && cargo fmt && cargo build
 
 release:

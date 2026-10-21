@@ -1,8 +1,8 @@
-use super::error::Error;
+use super::Result;
 
 pub type Msg = [u8; 64];
 
-pub fn get_controller_request(controller: u32) -> Result<Msg, Error> {
+pub fn get_controller_request(controller: u32) -> Result<Msg> {
     let mut packet = [0x00; 64];
 
     packet[0] = 0x17;
@@ -13,7 +13,7 @@ pub fn get_controller_request(controller: u32) -> Result<Msg, Error> {
     Ok(packet)
 }
 
-fn pack_uint32(v: u32, packet: &mut Msg, offset: usize) -> Result<(), Error> {
+fn pack_uint32(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
     let bytes = v.to_le_bytes();
 
     packet[offset..offset + 4].clone_from_slice(&bytes);
@@ -38,4 +38,10 @@ mod tests {
 
         assert_eq!(result, expected);
     }
+}
+
+mod generated_tests {
+    // use super::*;
+    // include!(concat!(env!("OUT_DIR"), "/generated_tests.rs"));
+    include!("generated/generated_tests.rs");
 }

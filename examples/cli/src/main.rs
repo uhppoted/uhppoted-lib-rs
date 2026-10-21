@@ -1,3 +1,4 @@
+use log::{debug, info, warn};
 use std::env;
 use std::process::ExitCode;
 
@@ -7,7 +8,9 @@ use commands::COMMANDS;
 mod commands;
 
 fn main() -> ExitCode {
-    println!("uhppoted-lib-rs CLI v0.0.0");
+    env_logger::init();
+
+    info!("uhppoted-lib-rs CLI v0.0.0");
 
     let mut args = env::args().skip(1).peekable();
 
@@ -15,27 +18,27 @@ fn main() -> ExitCode {
         match arg.as_str() {
             "--debug" => {
                 args.next();
-                println!(">>> uhppoted-lib-rs::debug");
+                debug!(">>> uhppoted-lib-rs::debug");
             }
 
             "--bind" => {
                 args.next();
                 if let Some(val) = args.next() {
-                    println!(">>> uhppoted-lib-rs::bind {}", val);
+                    debug!(">>> uhppoted-lib-rs::bind {}", val);
                 }
             }
 
             "--broadcast" => {
                 args.next();
                 if let Some(val) = args.next() {
-                    println!(">>> uhppoted-lib-rs::broadcast {}", val);
+                    debug!(">>> uhppoted-lib-rs::broadcast {}", val);
                 }
             }
 
             "--listen" => {
                 args.next();
                 if let Some(val) = args.next() {
-                    println!(">>> uhppoted-lib-rs::listen {}", val);
+                    debug!(">>> uhppoted-lib-rs::listen {}", val);
                 }
             }
 
@@ -47,14 +50,11 @@ fn main() -> ExitCode {
         let ok = match COMMANDS.iter().find(|c| c.name == cmd) {
             Some(c) => {
                 c.exec();
-                println!();
                 true
             }
 
             None => {
-                println!();
-                println!("   *** ERROR: invalid command {cmd}");
-                println!();
+                warn!("   *** ERROR: invalid command {cmd}");
                 false
             }
         };

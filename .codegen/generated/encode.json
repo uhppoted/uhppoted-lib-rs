@@ -1,7 +1,17 @@
 {
-	"tests": [
-		{ 
-			"test": "find-controllers"
-		}
-	]
+  "requests": [
+    {
+      "request": "get-controller-request",
+      "tests": [
+        {
+          "test": "find-controllers",
+          "expected": "F5QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        },
+        {
+          "test": "get-controller",
+          "expected": "F5QAAHg3KhgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        }
+      ]
+    }
+  ]
 }

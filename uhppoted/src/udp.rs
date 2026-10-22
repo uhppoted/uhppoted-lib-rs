@@ -1,17 +1,17 @@
+use std::io::ErrorKind;
 use std::net::UdpSocket;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use super::Config;
 use super::Result;
 use super::encode::Msg;
 use super::net::dump;
 
-const READ_TIMEOUT: Duration = Duration::from_millis(5000);
 const WRITE_TIMEOUT: Duration = Duration::from_millis(1000);
-// const TIMEOUT: Duration = Duration::from_millis(2500);
 
 pub fn broadcast(cfg: &Config, request: &Msg) -> Result<Vec<Msg>> {
     let socket = UdpSocket::bind(cfg.bind.as_str())?;
+    let timeout = Duration::from_millis(1250);
 
     dump(
         "UDP",
@@ -20,48 +20,47 @@ pub fn broadcast(cfg: &Config, request: &Msg) -> Result<Vec<Msg>> {
     );
 
     socket.set_write_timeout(Some(WRITE_TIMEOUT))?;
-    socket.set_read_timeout(Some(READ_TIMEOUT))?;
     socket.set_broadcast(true)?;
     socket.send_to(request, cfg.broadcast.as_str())?;
 
-    read_all(socket)
+    read_all(socket, timeout)
 }
 
-fn read_all(_socket: UdpSocket) -> Result<Vec<Msg>> {
-    let replies = Vec::<Msg>::new();
+fn read_all(socket: UdpSocket, timeout: Duration) -> Result<Vec<Msg>> {
+    let deadline = Instant::now() + timeout;
+    let mut replies = Vec::<Msg>::new();
+    let mut buffer = [0u8; 1024];
 
-    // let replies = RwLock::<Vec<Msg>>::new(vec![]);
-    //
-    // let f = future::timeout(Duration::from_millis(2500), async {
-    //     let sock = async_std::net::UdpSocket::from(socket);
-    //     let mut buffer = [0u8; 1024];
-    //
-    //     let result: Result<()> = loop {
-    //         match sock.recv(&mut buffer).await {
-    //             Ok(64) => {
-    //                 dump(buffer[..64].try_into()?);
-    //                 replies.write().unwrap().push(buffer[..64].try_into()?);
-    //             }
-    //
-    //             Err(e) => break Err(error::Error::from(e)),
-    //             _ => continue,
-    //         }
-    //     };
-    //
-    //     return result;
-    // });
-    //
-    // return async {
-    //     match f.await {
-    //         Ok(v) => match v {
-    //             Ok(_) => return Ok(replies.read().unwrap().to_vec()),
-    //             Err(e) => return Err(error::Error::from(e)),
-    //         },
-    //
-    //         Err(_) => return Ok(replies.read().unwrap().to_vec()),
-    //     }
-    // }
-    // .await;
+    loop {
+        let remaining = deadline.saturating_duration_since(Instant::now());
+
+        if remaining.is_zero() {
+            break;
+        }
+
+        socket.set_read_timeout(Some(remaining))?;
+
+        match socket.recv_from(&mut buffer) {
+            Ok((64, from)) => {
+                dump(
+                    "UDP",
+                    &format!("received {} bytes from {}", 64, from),
+                    &buffer[..64].try_into().unwrap(),
+                );
+
+                replies.push(buffer[..64].try_into().unwrap());
+            }
+
+            Ok((_, _)) => continue,
+
+            Err(e) => match e.kind() {
+                ErrorKind::WouldBlock => continue,
+                ErrorKind::TimedOut => continue,
+                ErrorKind::Interrupted => continue,
+                _ => return Err(e.into()),
+            },
+        }
+    }
 
     Ok(replies)
 }

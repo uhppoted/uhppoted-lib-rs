@@ -43,3 +43,6 @@ publish: release
 
 debug: build
 	$(CLI) find-controllers
+
+find-controllers: build
+	$(CLI) find-controllers

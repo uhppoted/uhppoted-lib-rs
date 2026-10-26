@@ -1,6 +1,6 @@
 use log::debug;
 
-use super::encode::Msg;
+use super::Msg;
 
 pub fn dump(tag: &str, description: &str, packet: &Msg) {
     let hex: Vec<String> = (0..4)
@@ -24,7 +24,7 @@ pub fn dump(tag: &str, description: &str, packet: &Msg) {
         .collect();
 
     let msg = format!(
-        "{}  {}\n{}\n{}\n{}\n{}",
+        "{}  {}\n{}\n{}\n{}\n{}\n",
         tag, description, hex[0], hex[1], hex[2], hex[3]
     );
 

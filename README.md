@@ -1,6 +1,5 @@
 ![build](https://github.com/uhppoted/uhppoted-lib-rs/workflows/build/badge.svg)
 
-
 # uhppoted-lib-rs
 
 Rust crate for interfacing to the UHPPOTE access controllers.

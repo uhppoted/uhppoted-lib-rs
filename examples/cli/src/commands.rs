@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 pub const COMMANDS: [&Command; 1] = [&Command {
     name: "find-controllers",
     func: find_controllers,
@@ -22,5 +24,18 @@ fn find_controllers() {
         listen: "192.168.1.125:60001".to_string(),
     };
 
-    uhppoted::find_controllers(&cfg);
+    match uhppoted::find_controllers(&cfg, Duration::from_millis(1250)) {
+        Ok(list) => {
+            for response in list {
+                println!("{:#?}\n", response)
+            }
+        }
+        Err(e) => error(e),
+    };
+}
+
+fn error(e: uhppoted::error::Error) {
+    println!();
+    println!("   *** ERROR: {e}");
+    println!();
 }

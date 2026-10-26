@@ -4,7 +4,9 @@ version = "0.0.0"
 edition = "2024"
 
 [dependencies]
+chrono = "0.4.45"
 log = "0.4.34"
+regex = "1.13.1"
 
 [build-dependencies]
 base64 = "0.23.1"

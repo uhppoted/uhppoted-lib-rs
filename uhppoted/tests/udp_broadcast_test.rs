@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 #[test]
 fn test_find_controllers() {
     let cfg = uhppoted::Config {
@@ -6,5 +8,8 @@ fn test_find_controllers() {
         listen: "192.168.1.125:60001".to_string(),
     };
 
-    assert_eq!(uhppoted::find_controllers(&cfg), 0);
+    assert_eq!(
+        uhppoted::find_controllers(&cfg, Duration::from_millis(250)),
+        0
+    );
 }

@@ -3,15 +3,15 @@ use std::net::UdpSocket;
 use std::time::{Duration, Instant};
 
 use super::Config;
+use super::Msg;
 use super::Result;
-use super::encode::Msg;
 use super::net::dump;
 
-const WRITE_TIMEOUT: Duration = Duration::from_millis(1000);
+const WRITE_TIMEOUT: Duration = Duration::from_millis(250);
 
-pub fn broadcast(cfg: &Config, request: &Msg) -> Result<Vec<Msg>> {
+pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<Msg>> {
+    let deadline = Instant::now() + timeout;
     let socket = UdpSocket::bind(cfg.bind.as_str())?;
-    let timeout = Duration::from_millis(1250);
 
     dump(
         "UDP",
@@ -23,11 +23,6 @@ pub fn broadcast(cfg: &Config, request: &Msg) -> Result<Vec<Msg>> {
     socket.set_broadcast(true)?;
     socket.send_to(request, cfg.broadcast.as_str())?;
 
-    read_all(socket, timeout)
-}
-
-fn read_all(socket: UdpSocket, timeout: Duration) -> Result<Vec<Msg>> {
-    let deadline = Instant::now() + timeout;
     let mut replies = Vec::<Msg>::new();
     let mut buffer = [0u8; 1024];
 

@@ -1,6 +1,5 @@
+use super::Msg;
 use super::Result;
-
-pub type Msg = [u8; 64];
 
 pub fn get_controller_request(controller: u32) -> Result<Msg> {
     let mut packet = [0x00; 64];

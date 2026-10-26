@@ -1,5 +1,9 @@
+use std::time::Duration;
 #[path = "encode.rs"]
 pub mod encode;
+
+#[path = "decode.rs"]
+pub mod decode;
 
 #[path = "net.rs"]
 pub mod net;
@@ -12,6 +16,10 @@ pub mod error;
 
 pub type Result<T> = std::result::Result<T, error::Error>;
 
+pub(crate) type Msg = [u8; 64];
+
+pub type GetControllerResponse = decode::GetControllerResponse;
+
 #[derive(Clone, Debug)]
 pub struct Config {
     pub bind: String,      // SocketAddrV4 ??
@@ -19,10 +27,18 @@ pub struct Config {
     pub listen: String,    // SocketAddrV4 ??
 }
 
-pub fn find_controllers(cfg: &Config) -> u64 {
-    if let Ok(request) = encode::get_controller_request(0) {
-        let _ = udp::broadcast(cfg, &request);
-    }
+pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<GetControllerResponse>> {
+    let request = encode::get_controller_request(0)?;
 
-    0
+    match udp::broadcast(cfg, &request, timeout) {
+        Ok(replies) => {
+            return Ok(replies
+                .iter()
+                .map(|reply| decode::get_controller_response(&reply))
+                .filter_map(|reply| reply.ok())
+                .collect::<Vec<_>>());
+        }
+
+        Err(e) => return Err(e),
+    }
 }

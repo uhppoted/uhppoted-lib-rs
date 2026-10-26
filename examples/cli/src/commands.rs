@@ -19,9 +19,9 @@ impl Command {
 
 fn find_controllers() {
     let cfg = uhppoted::Config {
-        bind: "192.168.1.125:0".to_string(),
-        broadcast: "192.168.1.255:60000".to_string(),
-        listen: "192.168.1.125:60001".to_string(),
+        bind: "192.168.1.125:0".parse().unwrap(),
+        broadcast: "192.168.1.255:60000".parse().unwrap(),
+        listen: "192.168.1.125:60001".parse().unwrap(),
     };
 
     match uhppoted::find_controllers(&cfg, Duration::from_millis(1250)) {

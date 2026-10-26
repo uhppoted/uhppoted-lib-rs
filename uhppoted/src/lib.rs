@@ -1,4 +1,5 @@
 use std::time::Duration;
+
 #[path = "encode.rs"]
 pub mod encode;
 
@@ -22,23 +23,21 @@ pub type GetControllerResponse = decode::GetControllerResponse;
 
 #[derive(Clone, Debug)]
 pub struct Config {
-    pub bind: String,      // SocketAddrV4 ??
-    pub broadcast: String, // SocketAddrV4 ??
-    pub listen: String,    // SocketAddrV4 ??
+    pub bind: std::net::SocketAddrV4,
+    pub broadcast: std::net::SocketAddrV4,
+    pub listen: std::net::SocketAddrV4,
 }
 
 pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<GetControllerResponse>> {
     let request = encode::get_controller_request(0)?;
 
     match udp::broadcast(cfg, &request, timeout) {
-        Ok(replies) => {
-            return Ok(replies
-                .iter()
-                .map(|reply| decode::get_controller_response(&reply))
-                .filter_map(|reply| reply.ok())
-                .collect::<Vec<_>>());
-        }
+        Ok(replies) => Ok(replies
+            .iter()
+            .map(decode::get_controller_response)
+            .filter_map(|reply| reply.ok())
+            .collect::<Vec<_>>()),
 
-        Err(e) => return Err(e),
+        Err(e) => Err(e),
     }
 }

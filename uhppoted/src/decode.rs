@@ -19,19 +19,19 @@ pub struct GetControllerResponse {
 
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     if packet.len() != 64 {
-        return Err(format!("Invalid reply packet length ({})", packet.len()))?;
+        Err(format!("Invalid reply packet length ({})", packet.len()))?
     }
 
     // Ref. v6.62 firmware event
     if packet[0] != 0x17 && (packet[0] != 0x19 || packet[1] != 0x20) {
-        return Err(format!(
+        Err(format!(
             "Invalid reply start of message byte ({:02x})",
             packet[0]
-        ))?;
+        ))?
     }
 
     if packet[1] != 0x94 {
-        return Err(format!("Invalid reply function code ({:02x})", packet[1]))?;
+        Err(format!("Invalid reply function code ({:02x})", packet[1]))?
     }
 
     let response = GetControllerResponse {
@@ -44,7 +44,7 @@ pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
         date: unpack_date(packet, 28)?,
     };
 
-    return Ok(response);
+    Ok(response)
 }
 
 #[macro_export]
@@ -67,7 +67,7 @@ fn unpack_uint32(packet: &Msg, offset: usize) -> Result<u32> {
 
     bytes.clone_from_slice(&packet[offset..offset + 4]);
 
-    return Ok(u32::from_le_bytes(bytes));
+    Ok(u32::from_le_bytes(bytes))
 }
 
 fn unpack_ipv4(packet: &Msg, offset: usize) -> Result<Ipv4Addr> {
@@ -76,7 +76,7 @@ fn unpack_ipv4(packet: &Msg, offset: usize) -> Result<Ipv4Addr> {
     let u2 = packet[offset + 2];
     let u3 = packet[offset + 3];
 
-    return Ok(Ipv4Addr::new(u0, u1, u2, u3));
+    Ok(Ipv4Addr::new(u0, u1, u2, u3))
 }
 
 fn unpack_mac(packet: &Msg, offset: usize) -> Result<String> {
@@ -90,14 +90,14 @@ fn unpack_mac(packet: &Msg, offset: usize) -> Result<String> {
         packet[offset + 5]
     );
 
-    return Ok(mac);
+    Ok(mac)
 }
 
 fn unpack_version(packet: &Msg, offset: usize) -> Result<String> {
     let major = packet[offset];
     let minor = packet[offset + 1];
 
-    return Ok(format!("v{major:x}.{minor:02x}").to_string());
+    Ok(format!("v{major:x}.{minor:02x}").to_string())
 }
 
 fn unpack_date(packet: &Msg, offset: usize) -> Result<NaiveDate> {
@@ -105,7 +105,7 @@ fn unpack_date(packet: &Msg, offset: usize) -> Result<NaiveDate> {
     let s = bcd2string!(slice);
 
     match NaiveDate::parse_from_str(&s, "%Y%m%d") {
-        Ok(date) => return Ok(date),
+        Ok(date) => Ok(date),
         Err(_) => Err(Error::from(format!("invalid date string {}", s))),
     }
 }

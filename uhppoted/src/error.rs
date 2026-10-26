@@ -10,6 +10,9 @@ pub struct Error {
 pub enum ErrorKind {
     _NoResponse,
     Timeout,
+    InvalidAddress,
+    BindToReservedPort,
+    BoundToReservedPort,
     IO,
     Other,
 }
@@ -33,11 +36,41 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<ErrorKind> for Error {
+    fn from(kind: ErrorKind) -> Error {
+        Error {
+            _kind: kind,
+            message: format!("{}", kind),
+        }
+    }
+}
+
 impl From<String> for Error {
     fn from(message: String) -> Error {
         Error {
             _kind: ErrorKind::Other,
-            message: format!("{}", message),
+            message: message.to_string(),
         }
+    }
+}
+
+impl ErrorKind {
+    pub(crate) fn as_str(&self) -> &'static str {
+        use ErrorKind::*;
+        match *self {
+            InvalidAddress => "Invalid IPv4 address",
+            BindToReservedPort => "Bind address:port reserved for broadcast",
+            BoundToReservedPort => "Bound address:port reserved for broadcast",
+            _NoResponse => "No response to request",
+            Timeout => "Timeout waiting for response from controller",
+            IO => "I/O",
+            Other => "Other",
+        }
+    }
+}
+
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str(self.as_str())
     }
 }

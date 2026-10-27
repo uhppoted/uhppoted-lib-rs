@@ -2,11 +2,15 @@ use chrono::NaiveDate;
 use regex::Regex;
 use std::net::Ipv4Addr;
 
+pub mod codec;
+
 use super::Msg;
 use super::Result;
 use super::error::Error;
 
-#[derive(Clone, Debug)]
+use crate::decode::codec::Decode;
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct GetControllerResponse {
     pub controller: u32,
     pub ip_address: Ipv4Addr,
@@ -17,34 +21,40 @@ pub struct GetControllerResponse {
     pub date: NaiveDate,
 }
 
+impl codec::Decode for GetControllerResponse {
+    fn decode(packet: &Msg) -> Result<GetControllerResponse> {
+        if packet.len() != 64 {
+            Err(format!("Invalid reply packet length ({})", packet.len()))?
+        }
+
+        // Ref. v6.62 firmware event
+        if packet[0] != 0x17 && (packet[0] != 0x19 || packet[1] != 0x20) {
+            Err(format!(
+                "Invalid reply start of message byte ({:02x})",
+                packet[0]
+            ))?
+        }
+
+        if packet[1] != 0x94 {
+            Err(format!("Invalid reply function code ({:02x})", packet[1]))?
+        }
+
+        let response = GetControllerResponse {
+            controller: unpack_uint32(packet, 4)?,
+            ip_address: unpack_ipv4(packet, 8)?,
+            subnet_mask: unpack_ipv4(packet, 12)?,
+            gateway: unpack_ipv4(packet, 16)?,
+            mac_address: unpack_mac(packet, 20)?,
+            version: unpack_version(packet, 26)?,
+            date: unpack_date(packet, 28)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
-    if packet.len() != 64 {
-        Err(format!("Invalid reply packet length ({})", packet.len()))?
-    }
-
-    // Ref. v6.62 firmware event
-    if packet[0] != 0x17 && (packet[0] != 0x19 || packet[1] != 0x20) {
-        Err(format!(
-            "Invalid reply start of message byte ({:02x})",
-            packet[0]
-        ))?
-    }
-
-    if packet[1] != 0x94 {
-        Err(format!("Invalid reply function code ({:02x})", packet[1]))?
-    }
-
-    let response = GetControllerResponse {
-        controller: unpack_uint32(packet, 4)?,
-        ip_address: unpack_ipv4(packet, 8)?,
-        subnet_mask: unpack_ipv4(packet, 12)?,
-        gateway: unpack_ipv4(packet, 16)?,
-        mac_address: unpack_mac(packet, 20)?,
-        version: unpack_version(packet, 26)?,
-        date: unpack_date(packet, 28)?,
-    };
-
-    Ok(response)
+    GetControllerResponse::decode(packet)
 }
 
 #[macro_export]
@@ -108,4 +118,11 @@ fn unpack_date(packet: &Msg, offset: usize) -> Result<NaiveDate> {
         Ok(date) => Ok(date),
         Err(_) => Err(Error::from(format!("invalid date string {}", s))),
     }
+}
+
+#[cfg(test)]
+mod generated_tests {
+    use super::*;
+
+    include!("generated/decode_tests.rs");
 }

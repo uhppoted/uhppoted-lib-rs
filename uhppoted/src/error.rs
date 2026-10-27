@@ -13,6 +13,7 @@ pub enum ErrorKind {
     InvalidAddress,
     BindToReservedPort,
     BoundToReservedPort,
+    InvalidResponse,
     IO,
     Other,
 }
@@ -63,6 +64,7 @@ impl ErrorKind {
             BoundToReservedPort => "Bound address:port reserved for broadcast",
             _NoResponse => "No response to request",
             Timeout => "Timeout waiting for response from controller",
+            InvalidResponse => "Invalid response from controller",
             IO => "I/O",
             Other => "Other",
         }

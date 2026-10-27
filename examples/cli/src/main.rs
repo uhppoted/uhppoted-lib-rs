@@ -7,6 +7,9 @@ use commands::COMMANDS;
 #[path = "commands.rs"]
 mod commands;
 
+#[path = "args.rs"]
+pub mod args;
+
 fn main() -> ExitCode {
     env_logger::init();
 
@@ -46,10 +49,12 @@ fn main() -> ExitCode {
         }
     }
 
+    let rq = args::Args { controller: 405419896 };
+
     if let Some(cmd) = args.next() {
         let ok = match COMMANDS.iter().find(|c| c.name == cmd) {
             Some(c) => {
-                c.exec();
+                c.exec(rq);
                 true
             }
 
@@ -74,7 +79,7 @@ fn main() -> ExitCode {
 
 fn usage() {
     println!();
-    println!("  Usage: cli [--debug] [--bind <address>] [--broadcast <address>] [commands]");
+    println!("  Usage: cli [--debug] [--bind <address>] [--broadcast <address>] [command]");
     println!();
     println!("    Options:");
     println!("    --debug                prints sent and received UDP packets to stdout");

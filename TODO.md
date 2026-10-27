@@ -3,13 +3,14 @@
 ## In Progress
 
 - [x] udp::broadcast send-to-self
-- [ ] decode trait
-- [ ] rename bind to bindAddr, etc
+- [x] decode trait
 - [ ] fix CLI args
 - [ ] NB: io::ErrorKind::ConnectionReset for UDP sendto
+- [ ] codegen - just use Go
 
 - [x] find-controllers
-- [ ] get-controller
+- [x] get-controller
+
 
 ## To Be Done
 

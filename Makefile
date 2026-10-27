@@ -35,9 +35,6 @@ integration-tests: build
 build-all: build test lint integration-tests
 	cd examples/cli && cargo fmt && cargo build
 
-build-github: build test lint
-	cd examples/cli && cargo fmt && cargo build
-
 release:
 	@echo "Nothing to do
 

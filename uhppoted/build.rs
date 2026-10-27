@@ -42,6 +42,8 @@ fn main() {
     }
 
     // ... generate encode tests
+    std::fs::create_dir_all("src/codec/generated");
+
     let file = Path::new("src/codec/generated/encode_tests.rs");
 
     let generated = r#"

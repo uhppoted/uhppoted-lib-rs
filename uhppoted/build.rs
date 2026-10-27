@@ -41,12 +41,14 @@ fn main() {
         }
     }
 
-    // ... generate encode tests
-    std::fs::create_dir_all("src/codec/generated");
+    // ... generate tests
+    let _ = std::fs::create_dir_all("src/codec/generated");
 
-    let file = Path::new("src/codec/generated/encode_tests.rs");
+    // ... encode
+    {
+        let file = Path::new("src/codec/generated/encode_tests.rs");
 
-    let generated = r#"
+        let generated = r#"
     #[test]
     fn find_controllers() {
         let expected: Msg = [
@@ -77,13 +79,52 @@ fn main() {
     }
     "#;
 
-    println!(
-        "cargo:warning=... generating encode unit tests {}",
-        file.display()
-    );
+        println!(
+            "cargo:warning=... generating encode unit tests {}",
+            file.display()
+        );
 
-    fs::write(file, generated).unwrap();
+        fs::write(file, generated).unwrap();
+    }
 
+    // ... decode
+    {
+        let file = Path::new("src/codec/generated/decode_tests.rs");
+
+        let generated = r#"use super::GetControllerResponse;
+
+    #[test]
+    fn get_controller() {
+        let packet: Msg = [
+                0x17, 0x94, 0x00, 0x00, 0x78, 0x37, 0x2a, 0x18, 0xc0, 0xa8, 0x01, 0x64, 0xff, 0xff, 0xff, 0x00,
+                0xc0, 0xa8, 0x01, 0x01, 0x00, 0x12, 0x23, 0x34, 0x45, 0x56, 0x08, 0x92, 0x20, 0x18, 0x11, 0x05,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let expected = GetControllerResponse {
+        controller: 405419896,
+        ip_address: "192.168.1.100".parse().unwrap(),
+        subnet_mask: "255.255.255.0".parse().unwrap(),
+        gateway: "192.168.1.1".parse().unwrap(),
+        mac_address: "00:12:23:34:45:56".to_string(),
+        version: "v8.92".to_string(),
+        date: "2018-11-05".parse().unwrap(),
+        };
+
+        let response = get_controller_response(&packet).unwrap();
+
+        assert_eq!(response, expected);
+    }
+"#;
+
+        println!(
+            "cargo:warning=... generating decode unit tests {}",
+            file.display()
+        );
+
+        fs::write(file, generated).unwrap();
+    }
     println!("cargo:rerun-if-changed=build.rs");
 }
 

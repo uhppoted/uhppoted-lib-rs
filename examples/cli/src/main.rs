@@ -49,12 +49,21 @@ fn main() -> ExitCode {
         }
     }
 
-    let rq = args::Args { controller: 405419896 };
+    let rq = args::Args {
+        controller: 405419896,
+        dest: "192.168.1.125:60000".parse().unwrap(),
+    };
+
+    let cfg = uhppoted::Config {
+        bind: "192.168.1.125:0".parse().unwrap(),
+        broadcast: "192.168.1.255:60000".parse().unwrap(),
+        listen: "192.168.1.125:60001".parse().unwrap(),
+    };
 
     if let Some(cmd) = args.next() {
         let ok = match COMMANDS.iter().find(|c| c.name == cmd) {
             Some(c) => {
-                c.exec(rq);
+                c.exec(cfg, rq);
                 true
             }
 

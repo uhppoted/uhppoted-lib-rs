@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use uhppoted::Controller;
+
 use super::args::Args;
 
 pub const COMMANDS: [&Command; 2] = [
@@ -15,23 +17,17 @@ pub const COMMANDS: [&Command; 2] = [
 
 pub struct Command {
     pub name: &'static str,
-    pub func: fn(args: Args),
+    pub func: fn(cfg: uhppoted::Config, args: Args),
 }
 
 impl Command {
-    pub fn exec(&self, args: Args) {
+    pub fn exec(&self, cfg: uhppoted::Config, args: Args) {
         println!("{}", self.name);
-        (self.func)(args);
+        (self.func)(cfg, args);
     }
 }
 
-fn find_controllers(_: Args) {
-    let cfg = uhppoted::Config {
-        bind: "192.168.1.125:0".parse().unwrap(),
-        broadcast: "192.168.1.255:60000".parse().unwrap(),
-        listen: "192.168.1.125:60001".parse().unwrap(),
-    };
-
+fn find_controllers(cfg: uhppoted::Config, _: Args) {
     match uhppoted::find_controllers(&cfg, Duration::from_millis(1250)) {
         Ok(list) => {
             for response in list {
@@ -42,17 +38,18 @@ fn find_controllers(_: Args) {
     };
 }
 
-fn get_controller(args: Args) {
-    let cfg = uhppoted::Config {
-        bind: "192.168.1.125:0".parse().unwrap(),
-        broadcast: "192.168.1.255:60000".parse().unwrap(),
-        listen: "192.168.1.125:60001".parse().unwrap(),
-    };
+fn get_controller(cfg: uhppoted::Config, args: Args) {
+    let controller = Controller::new(args.controller).with_address(args.dest);
 
-    match uhppoted::get_controller(&cfg, args.controller, Duration::from_millis(1250)) {
+    match uhppoted::get_controller(&cfg, controller, Duration::from_millis(1250)) {
         Ok(response) => println!("{:#?}\n", response),
         Err(e) => error(e),
     };
+
+    // match uhppoted::get_controller(&cfg, args.controller, Duration::from_millis(1250)) {
+    //     Ok(response) => println!("{:#?}\n", response),
+    //     Err(e) => error(e),
+    // };
 }
 
 fn error(e: uhppoted::error::Error) {

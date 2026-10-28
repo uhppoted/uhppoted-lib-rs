@@ -1,9 +1,5 @@
 use std::time::Duration;
 
-pub type Controller = structs::Controller;
-
-pub type Result<T> = std::result::Result<T, error::Error>;
-
 #[path = "error.rs"]
 pub mod error;
 
@@ -13,25 +9,27 @@ pub(crate) mod encode;
 #[path = "codec/decode.rs"]
 pub(crate) mod decode;
 
-#[path = "net.rs"]
+#[path = "net/net.rs"]
 pub(crate) mod net;
 
-#[path = "udp.rs"]
+#[path = "net/udp.rs"]
 pub(crate) mod udp;
 
 #[path = "structs.rs"]
 pub(crate) mod structs;
 
+#[path = "controller.rs"]
+pub(crate) mod controller;
+
 pub(crate) type Msg = [u8; 64];
 
-#[derive(Clone, Debug)]
-pub struct Config {
-    pub bind: std::net::SocketAddrV4,
-    pub broadcast: std::net::SocketAddrV4,
-    pub listen: std::net::SocketAddrV4,
-}
+pub type Config = controller::Config;
+pub type Controller = controller::Controller;
+pub type Result<T> = std::result::Result<T, error::Error>;
 
-pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<Controller>> {
+pub type ControllerRecord = structs::ControllerRecord;
+
+pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<ControllerRecord>> {
     let request = encode::get_controller_request(0)?;
 
     match udp::broadcast(cfg, &request, timeout) {
@@ -39,7 +37,7 @@ pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<Controlle
             .iter()
             .map(decode::get_controller_response)
             .filter_map(|reply| reply.ok())
-            .map(|response| Controller {
+            .map(|response| ControllerRecord {
                 controller: response.controller,
                 ip_address: response.ip_address,
                 subnet_mask: response.subnet_mask,
@@ -54,16 +52,27 @@ pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<Controlle
     }
 }
 
-pub fn get_controller(cfg: &Config, controller: u32, timeout: Duration) -> Result<Controller> {
-    let request = encode::get_controller_request(controller)?;
-    let reply = udp::broadcast_to(cfg, &request, timeout)?;
+pub fn get_controller<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    timeout: Duration,
+) -> Result<ControllerRecord> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let request = encode::get_controller_request(id)?;
+
+    let reply = match dest {
+        Some(addr) => udp::send_to(cfg, addr, &request, timeout)?,
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
     let response = decode::get_controller_response(&reply)?;
 
-    if response.controller != controller {
+    if response.controller != id {
         return Err(error::ErrorKind::InvalidResponse.into());
     }
 
-    Ok(Controller {
+    Ok(ControllerRecord {
         controller: response.controller,
         ip_address: response.ip_address,
         subnet_mask: response.subnet_mask,

@@ -10,6 +10,26 @@ use super::error::Error;
 
 use crate::decode::codec::Decode;
 
+macro_rules! validate {
+    ($packet:expr, $fn: expr) => {
+        if $packet.len() != 64 {
+            Err(format!("Invalid reply packet length ({})", $packet.len()))?
+        }
+
+        // Ref. v6.62 firmware event
+        if $packet[0] != 0x17 && ($packet[0] != 0x19 || $packet[1] != 0x20) {
+            Err(format!(
+                "Invalid reply start of message byte ({:02x})",
+                $packet[0]
+            ))?
+        }
+
+        if $packet[1] != $fn {
+            Err(format!("Invalid reply function code ({:02x})", $packet[1]))?
+        }
+    };
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct GetControllerResponse {
     pub controller: u32,
@@ -23,21 +43,7 @@ pub struct GetControllerResponse {
 
 impl codec::Decode for GetControllerResponse {
     fn decode(packet: &Msg) -> Result<GetControllerResponse> {
-        if packet.len() != 64 {
-            Err(format!("Invalid reply packet length ({})", packet.len()))?
-        }
-
-        // Ref. v6.62 firmware event
-        if packet[0] != 0x17 && (packet[0] != 0x19 || packet[1] != 0x20) {
-            Err(format!(
-                "Invalid reply start of message byte ({:02x})",
-                packet[0]
-            ))?
-        }
-
-        if packet[1] != 0x94 {
-            Err(format!("Invalid reply function code ({:02x})", packet[1]))?
-        }
+        validate!(packet, 0x94);
 
         let response = GetControllerResponse {
             controller: unpack_uint32(packet, 4)?,

@@ -2,6 +2,9 @@ use log::{debug, info, warn};
 use std::env;
 use std::process::ExitCode;
 
+use clap::Parser;
+
+use args::ArgsX;
 use commands::COMMANDS;
 
 #[path = "commands.rs"]
@@ -49,10 +52,7 @@ fn main() -> ExitCode {
         }
     }
 
-    let rq = args::Args {
-        controller: 405419896,
-        dest: "192.168.1.125:60000".parse().unwrap(),
-    };
+    let argsx = ArgsX::parse();
 
     let cfg = uhppoted::Config {
         bind: "192.168.1.125:0".parse().unwrap(),
@@ -60,15 +60,15 @@ fn main() -> ExitCode {
         listen: "192.168.1.125:60001".parse().unwrap(),
     };
 
-    if let Some(cmd) = args.next() {
-        let ok = match COMMANDS.iter().find(|c| c.name == cmd) {
-            Some(c) => {
-                c.exec(cfg, rq);
+    if let Some(cmd) = argsx.command {
+        let ok = match COMMANDS.iter().find(|c| c.name == cmd.name()) {
+            Some(_) => {
+                cmd.handle(cfg);
                 true
             }
 
             None => {
-                warn!("   *** ERROR: invalid command {cmd}");
+                warn!("   *** ERROR: invalid command {}", cmd.name());
                 false
             }
         };

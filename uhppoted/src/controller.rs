@@ -1,13 +1,13 @@
 use std::net::SocketAddrV4;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Config {
     pub bind: std::net::SocketAddrV4,
     pub broadcast: std::net::SocketAddrV4,
     pub listen: std::net::SocketAddrV4,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Controller {
     pub controller: u32,
     pub address: Option<std::net::SocketAddrV4>,

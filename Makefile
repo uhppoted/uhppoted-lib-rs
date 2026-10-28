@@ -5,7 +5,7 @@ LISTEN    ?= 192.168.1.125:60001
 CLI = cd examples/cli && cargo fmt && RUST_LOG=debug cargo run -- --debug --bind $(BIND) --broadcast $(BROADCAST) --listen $(LISTEN)
 
 CONTROLLER ?= 405419896
-
+DEST ?= 192.168.1.125:60000
 
 clean:
 	cargo clean
@@ -55,3 +55,4 @@ find-controllers: build
 
 get-controller: build
 	$(CLI) get-controller --controller $(CONTROLLER)
+	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST)

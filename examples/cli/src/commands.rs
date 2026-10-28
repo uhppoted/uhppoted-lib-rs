@@ -1,33 +1,20 @@
+use std::net::SocketAddrV4;
 use std::time::Duration;
 
 use uhppoted::Controller;
 
-use super::args::Args;
-
 pub const COMMANDS: [&Command; 2] = [
     &Command {
         name: "find-controllers",
-        func: find_controllers,
     },
-    &Command {
-        name: "get-controller",
-        func: get_controller,
-    },
+    &Command { name: "get-controller" },
 ];
 
 pub struct Command {
     pub name: &'static str,
-    pub func: fn(cfg: uhppoted::Config, args: Args),
 }
 
-impl Command {
-    pub fn exec(&self, cfg: uhppoted::Config, args: Args) {
-        println!("{}", self.name);
-        (self.func)(cfg, args);
-    }
-}
-
-fn find_controllers(cfg: uhppoted::Config, _: Args) {
+pub fn find_controllers(cfg: uhppoted::Config) {
     match uhppoted::find_controllers(&cfg, Duration::from_millis(1250)) {
         Ok(list) => {
             for response in list {
@@ -38,18 +25,18 @@ fn find_controllers(cfg: uhppoted::Config, _: Args) {
     };
 }
 
-fn get_controller(cfg: uhppoted::Config, args: Args) {
-    let controller = Controller::new(args.controller).with_address(args.dest);
-
-    match uhppoted::get_controller(&cfg, controller, Duration::from_millis(1250)) {
-        Ok(response) => println!("{:#?}\n", response),
-        Err(e) => error(e),
+pub fn get_controller(cfg: uhppoted::Config, controller: u32, dest: Option<SocketAddrV4>) {
+    let response = if let Some(addr) = dest {
+        let c = Controller::new(controller).with_address(addr);
+        uhppoted::get_controller(&cfg, c, Duration::from_millis(1250))
+    } else {
+        uhppoted::get_controller(&cfg, controller, Duration::from_millis(1250))
     };
 
-    // match uhppoted::get_controller(&cfg, args.controller, Duration::from_millis(1250)) {
-    //     Ok(response) => println!("{:#?}\n", response),
-    //     Err(e) => error(e),
-    // };
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
 }
 
 fn error(e: uhppoted::error::Error) {

@@ -79,10 +79,7 @@ fn main() {
     }
     "#;
 
-        println!(
-            "cargo:warning=... generating encode unit tests {}",
-            file.display()
-        );
+        println!("cargo:warning=... generating encode unit tests {}", file.display());
 
         fs::write(file, generated).unwrap();
     }
@@ -118,10 +115,7 @@ fn main() {
     }
 "#;
 
-        println!(
-            "cargo:warning=... generating decode unit tests {}",
-            file.display()
-        );
+        println!("cargo:warning=... generating decode unit tests {}", file.display());
 
         fs::write(file, generated).unwrap();
     }
@@ -130,9 +124,7 @@ fn main() {
 
 fn from_base64<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Packet, D::Error> {
     <&str>::deserialize(deserializer).and_then(|s| {
-        let bytes = general_purpose::STANDARD
-            .decode(s)
-            .map_err(serde::de::Error::custom)?;
+        let bytes = general_purpose::STANDARD.decode(s).map_err(serde::de::Error::custom)?;
 
         if bytes.len() != 64 {
             return Err(serde::de::Error::custom(format!(

@@ -8,10 +8,7 @@ mod stub;
 fn test_find_controllers() {
     let stub = stub::start();
 
-    assert_matches!(
-        uhppoted::find_controllers(&stub.cfg, Duration::from_millis(250)),
-        Ok(_)
-    );
+    assert_matches!(uhppoted::find_controllers(&stub.cfg, Duration::from_millis(250)), Ok(_));
 }
 
 #[test]

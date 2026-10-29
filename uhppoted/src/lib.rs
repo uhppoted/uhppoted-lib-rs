@@ -15,6 +15,9 @@ pub(crate) mod net;
 #[path = "net/udp.rs"]
 pub(crate) mod udp;
 
+#[path = "net/tcp.rs"]
+pub(crate) mod tcp;
+
 #[path = "structs.rs"]
 pub(crate) mod structs;
 
@@ -25,6 +28,7 @@ pub(crate) type Msg = [u8; 64];
 
 pub type Config = controller::Config;
 pub type Controller = controller::Controller;
+pub type Transport = controller::Transport;
 pub type Result<T> = std::result::Result<T, error::Error>;
 
 pub type ControllerRecord = structs::ControllerRecord;
@@ -59,10 +63,15 @@ pub fn get_controller<T: controller::ControllerRef>(
 ) -> Result<ControllerRecord> {
     let id = controller.id();
     let dest = controller.dest();
+    let transport = controller.transport();
+
     let request = encode::get_controller_request(id)?;
 
     let reply = match dest {
-        Some(addr) => udp::send_to(cfg, addr, &request, timeout)?,
+        Some(addr) => match transport {
+            Some(controller::Transport::TCP) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
         None => udp::broadcast_to(cfg, &request, timeout)?,
     };
 

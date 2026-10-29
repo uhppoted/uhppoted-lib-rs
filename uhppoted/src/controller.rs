@@ -37,6 +37,7 @@ impl Controller {
 pub trait ControllerRef {
     fn id(&self) -> u32;
     fn dest(&self) -> Option<SocketAddrV4>;
+    fn transport(&self) -> Option<Transport>;
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -53,6 +54,10 @@ impl ControllerRef for u32 {
     fn dest(&self) -> Option<SocketAddrV4> {
         None
     }
+
+    fn transport(&self) -> Option<Transport> {
+        None
+    }
 }
 
 impl ControllerRef for Controller {
@@ -62,5 +67,9 @@ impl ControllerRef for Controller {
 
     fn dest(&self) -> Option<SocketAddrV4> {
         self.address
+    }
+
+    fn transport(&self) -> Option<Transport> {
+        self.transport
     }
 }

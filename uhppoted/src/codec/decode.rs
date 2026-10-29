@@ -18,10 +18,7 @@ macro_rules! validate {
 
         // Ref. v6.62 firmware event
         if $packet[0] != 0x17 && ($packet[0] != 0x19 || $packet[1] != 0x20) {
-            Err(format!(
-                "Invalid reply start of message byte ({:02x})",
-                $packet[0]
-            ))?
+            Err(format!("Invalid reply start of message byte ({:02x})", $packet[0]))?
         }
 
         if $packet[1] != $fn {

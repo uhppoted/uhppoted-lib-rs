@@ -1,7 +1,9 @@
 use std::net::SocketAddrV4;
 
-use super::commands;
 use clap::{Args, Parser, Subcommand};
+use uhppoted::Transport;
+
+use super::commands;
 
 #[derive(Parser, Debug)]
 #[command(name = "cli")]
@@ -32,6 +34,27 @@ pub enum CommandsX {
     GetController(GetControllerArgs),
 }
 
+#[derive(Args, Debug, Clone, Copy)]
+pub struct TransportArgs {
+    #[arg(long, group = "transport")]
+    pub tcp: bool,
+
+    #[arg(long, group = "transport")]
+    pub udp: bool,
+}
+
+impl From<TransportArgs> for Option<Transport> {
+    fn from(args: TransportArgs) -> Self {
+        if args.tcp {
+            Some(Transport::TCP)
+        } else if args.udp {
+            Some(Transport::UDP)
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Args, Debug)]
 pub struct FindControllerArgs {}
 
@@ -42,6 +65,9 @@ pub struct GetControllerArgs {
 
     #[arg(long)]
     pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
 }
 
 impl CommandsX {
@@ -68,6 +94,6 @@ impl FindControllerArgs {
 
 impl GetControllerArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_controller(cfg, self.controller, self.dest);
+        commands::get_controller(cfg, self.controller, self.dest, self.transport);
     }
 }

@@ -2,6 +2,7 @@ use std::net::SocketAddrV4;
 use std::time::Duration;
 
 use uhppoted::Controller;
+use uhppoted::Transport;
 
 pub const COMMANDS: [&Command; 2] = [
     &Command {
@@ -25,9 +26,19 @@ pub fn find_controllers(cfg: uhppoted::Config) {
     };
 }
 
-pub fn get_controller(cfg: uhppoted::Config, controller: u32, dest: Option<SocketAddrV4>) {
+pub fn get_controller(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+) {
     let response = if let Some(addr) = dest {
-        let c = Controller::new(controller).with_address(addr);
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
         uhppoted::get_controller(&cfg, c, Duration::from_millis(1250))
     } else {
         uhppoted::get_controller(&cfg, controller, Duration::from_millis(1250))

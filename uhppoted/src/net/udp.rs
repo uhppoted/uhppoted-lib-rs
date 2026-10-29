@@ -54,11 +54,7 @@ pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<M
     socket.set_broadcast(true)?;
     socket.send_to(request, cfg.broadcast)?;
 
-    dump(
-        "UDP",
-        &format!("sent {} bytes to {}", 64, cfg.broadcast),
-        request,
-    );
+    dump("UDP", &format!("sent {} bytes to {}", 64, cfg.broadcast), request);
 
     let mut replies = Vec::<Msg>::new();
     let mut buffer = [0u8; 1024];
@@ -76,11 +72,7 @@ pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<M
             Ok((64, from)) => {
                 let packet: Msg = buffer[..64].try_into().unwrap();
 
-                dump(
-                    "UDP",
-                    &format!("received {} bytes from {}", 64, from),
-                    &packet,
-                );
+                dump("UDP", &format!("received {} bytes from {}", 64, from), &packet);
 
                 replies.push(packet);
             }
@@ -142,11 +134,7 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
     socket.set_broadcast(true)?;
     socket.send_to(request, cfg.broadcast)?;
 
-    dump(
-        "UDP",
-        &format!("sent {} bytes to {}", 64, cfg.broadcast),
-        request,
-    );
+    dump("UDP", &format!("sent {} bytes to {}", 64, cfg.broadcast), request);
 
     let mut buffer = [0u8; 1024];
 
@@ -163,11 +151,7 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
             Ok((64, from)) => {
                 let packet: Msg = buffer[..64].try_into().unwrap();
 
-                dump(
-                    "UDP",
-                    &format!("received {} bytes from {}", 64, from),
-                    &packet,
-                );
+                dump("UDP", &format!("received {} bytes from {}", 64, from), &packet);
 
                 return Ok(packet);
             }
@@ -186,7 +170,7 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
 
 pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duration) -> Result<Msg> {
     // ... validate
-    if cfg.bind.port() == dest.port() {
+    if cfg.bind == dest {
         return Err(ErrorKind::InvalidAddress.into());
     }
 
@@ -244,11 +228,7 @@ pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duratio
             Ok((64, from)) => {
                 let packet: Msg = buffer[..64].try_into().unwrap();
 
-                dump(
-                    "UDP",
-                    &format!("received {} bytes from {}", 64, from),
-                    &packet,
-                );
+                dump("UDP", &format!("received {} bytes from {}", 64, from), &packet);
 
                 return Ok(packet);
             }

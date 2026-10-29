@@ -54,5 +54,7 @@ find-controllers: build
 	$(CLI) find-controllers
 
 get-controller: build
-	$(CLI) get-controller --controller $(CONTROLLER)
-	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST)
+# 	$(CLI) get-controller --controller $(CONTROLLER)
+# 	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST)
+# 	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --udp
+	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --tcp

@@ -4,17 +4,6 @@ use std::time::Duration;
 use uhppoted::Controller;
 use uhppoted::Transport;
 
-pub const COMMANDS: [&Command; 2] = [
-    &Command {
-        name: "find-controllers",
-    },
-    &Command { name: "get-controller" },
-];
-
-pub struct Command {
-    pub name: &'static str,
-}
-
 pub fn find_controllers(cfg: uhppoted::Config) {
     match uhppoted::find_controllers(&cfg, Duration::from_millis(1250)) {
         Ok(list) => {

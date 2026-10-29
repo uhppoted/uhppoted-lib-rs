@@ -1,14 +1,14 @@
 use std::net::SocketAddrV4;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use uhppoted::Transport;
 
-use super::commands;
+use crate::commands;
 
 #[derive(Parser, Debug)]
 #[command(name = "cli")]
 #[command(author, version, about = "uhppoted-lib-rs CLI v0.0.0", long_about = None)]
-pub struct ArgsX {
+pub struct Args {
     #[arg(long, global = true)]
     pub debug: bool,
 
@@ -22,11 +22,11 @@ pub struct ArgsX {
     pub listen: Option<String>,
 
     #[command(subcommand)]
-    pub command: Option<CommandsX>,
+    pub command: Option<Commands>,
 }
 
 #[derive(Subcommand, Debug)]
-pub enum CommandsX {
+pub enum Commands {
     #[command(name = "find-controllers")]
     FindControllers(FindControllerArgs),
 
@@ -34,7 +34,7 @@ pub enum CommandsX {
     GetController(GetControllerArgs),
 }
 
-#[derive(Args, Debug, Clone, Copy)]
+#[derive(clap::Args, Debug, Clone, Copy)]
 pub struct TransportArgs {
     #[arg(long, group = "transport")]
     pub tcp: bool,
@@ -46,19 +46,19 @@ pub struct TransportArgs {
 impl From<TransportArgs> for Option<Transport> {
     fn from(args: TransportArgs) -> Self {
         if args.tcp {
-            Some(Transport::TCP)
+            Some(Transport::Tcp)
         } else if args.udp {
-            Some(Transport::UDP)
+            Some(Transport::Udp)
         } else {
             None
         }
     }
 }
 
-#[derive(Args, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct FindControllerArgs {}
 
-#[derive(Args, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct GetControllerArgs {
     #[arg(long)]
     pub controller: u32,
@@ -70,19 +70,23 @@ pub struct GetControllerArgs {
     pub transport: TransportArgs,
 }
 
-impl CommandsX {
+impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
-            CommandsX::FindControllers { .. } => "find-controllers",
-            CommandsX::GetController { .. } => "get-controller",
+            Commands::FindControllers { .. } => "find-controllers",
+            Commands::GetController { .. } => "get-controller",
         }
     }
 
     pub fn handle(&self, cfg: uhppoted::Config) {
         match self {
-            CommandsX::FindControllers(cmd) => cmd.handle(cfg),
-            CommandsX::GetController(cmd) => cmd.handle(cfg),
+            Commands::FindControllers(cmd) => cmd.handle(cfg),
+            Commands::GetController(cmd) => cmd.handle(cfg),
         }
+    }
+
+    pub fn list() -> Vec<&'static str> {
+        vec!["find-controllers", "get-controller"]
     }
 }
 

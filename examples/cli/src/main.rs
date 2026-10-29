@@ -1,11 +1,9 @@
-use log::{debug, info, warn};
-use std::env;
+use log::{info, warn};
 use std::process::ExitCode;
 
 use clap::Parser;
 
-use args::ArgsX;
-use commands::COMMANDS;
+use args::{Args, Commands};
 
 #[path = "commands.rs"]
 mod commands;
@@ -18,66 +16,30 @@ fn main() -> ExitCode {
 
     info!("uhppoted-lib-rs CLI v0.0.0");
 
-    let mut args = env::args().skip(1).peekable();
+    let args = Args::parse();
 
-    while let Some(arg) = args.peek() {
-        match arg.as_str() {
-            "--debug" => {
-                args.next();
-                debug!(">>> uhppoted-lib-rs::debug");
-            }
+    // ... config
+    let mut cfg = uhppoted::Config::new();
 
-            "--bind" => {
-                args.next();
-                if let Some(val) = args.next() {
-                    debug!(">>> uhppoted-lib-rs::bind {}", val);
-                }
-            }
-
-            "--broadcast" => {
-                args.next();
-                if let Some(val) = args.next() {
-                    debug!(">>> uhppoted-lib-rs::broadcast {}", val);
-                }
-            }
-
-            "--listen" => {
-                args.next();
-                if let Some(val) = args.next() {
-                    debug!(">>> uhppoted-lib-rs::listen {}", val);
-                }
-            }
-
-            _ => break,
-        }
+    if let Some(addr) = args.bind {
+        cfg = cfg.with_bind_addr(addr.parse().unwrap());
     }
 
-    let argsx = ArgsX::parse();
+    if let Some(addr) = args.broadcast {
+        cfg = cfg.with_broadcast_addr(addr.parse().unwrap());
+    }
 
-    let cfg = uhppoted::Config {
-        bind: "192.168.1.125:0".parse().unwrap(),
-        broadcast: "192.168.1.255:60000".parse().unwrap(),
-        listen: "192.168.1.125:60001".parse().unwrap(),
-    };
+    if let Some(addr) = args.listen {
+        cfg = cfg.with_listen_addr(addr.parse().unwrap());
+    }
 
-    if let Some(cmd) = argsx.command {
-        let ok = match COMMANDS.iter().find(|c| c.name == cmd.name()) {
-            Some(_) => {
-                cmd.handle(cfg);
-                true
-            }
+    // ... execute
+    if let Some(cmd) = args.command {
+        cmd.handle(cfg);
 
-            None => {
-                warn!("   *** ERROR: invalid command {}", cmd.name());
-                false
-            }
-        };
-
-        if ok {
-            return ExitCode::SUCCESS;
-        } else {
-            return ExitCode::FAILURE;
-        }
+        return ExitCode::SUCCESS;
+    } else {
+        warn!("   *** ERROR: invalid command");
     }
 
     // ... no command!
@@ -91,14 +53,15 @@ fn usage() {
     println!("  Usage: cli [--debug] [--bind <address>] [--broadcast <address>] [command]");
     println!();
     println!("    Options:");
-    println!("    --debug                prints sent and received UDP packets to stdout");
+    println!("    --debug                prints sent and received packets to log::DEBUG");
     println!("    --bind <address>       IPv4 address to which to bind. Defaults to 0.0.0.0");
     println!("    --broadcast <address>  IPv4 address for UDP broadcast. Defaults to 255.255.255.255:60000");
     println!("    --listen <address>     IPv4 address:port on which to listen for events. Defaults to 0.0.0.0:60001");
     println!();
     println!("    Commands:");
-    for c in COMMANDS {
-        println!("      {}", c.name);
+
+    for c in Commands::list() {
+        println!("      {}", c);
     }
 
     println!();

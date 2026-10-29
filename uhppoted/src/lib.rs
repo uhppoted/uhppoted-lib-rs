@@ -69,7 +69,7 @@ pub fn get_controller<T: controller::ControllerRef>(
 
     let reply = match dest {
         Some(addr) => match transport {
-            Some(controller::Transport::TCP) => tcp::send_to(cfg, addr, &request, timeout)?,
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
             _ => udp::send_to(cfg, addr, &request, timeout)?,
         },
         None => udp::broadcast_to(cfg, &request, timeout)?,

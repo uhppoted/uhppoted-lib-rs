@@ -1,3 +1,4 @@
+use std::net::Ipv4Addr;
 use std::time::Duration;
 
 #[path = "error.rs"]
@@ -90,4 +91,36 @@ pub fn get_controller<T: controller::ControllerRef>(
         version: response.version,
         date: response.date,
     })
+}
+
+#[allow(non_snake_case)]
+pub fn set_IPv4<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    address: Ipv4Addr,
+    netmask: Ipv4Addr,
+    gateway: Ipv4Addr,
+    timeout: Duration,
+) -> Result<bool> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::set_IPv4_request(id, address, netmask, gateway)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::set_IPv4_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.ok)
 }

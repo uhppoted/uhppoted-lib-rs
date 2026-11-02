@@ -11,12 +11,46 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] config builder
 - [ ] CLI args
     - [ ] --debug: set log level
+
 - [ ] copy remaining lambda to udp.rs
 - [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
 - [ ] codegen - just use Go
 
 - [x] find-controllers
 - [x] get-controller
+- [x] set-IPv4
+- [ ] get-time
+- [ ] set-time
+- [ ] get-listener
+- [ ] set-listener
+- [ ] get-door
+- [ ] set-door
+- [ ] open-door
+- [ ] get-status
+- [ ] get-cards
+- [ ] get-card
+- [ ] get-cardatindex
+- [ ] put-card
+- [ ] delete-card
+- [ ] delete-all-cards
+- [ ] get-event
+- [ ] get-event-index
+- [ ] set-event-index
+- [ ] record-special-events
+- [ ] get-time-profile
+- [ ] set-time-profile
+- [ ] clear-time-profiles
+- [ ] add-task
+- [ ] refresh-tasklist
+- [ ] clear-tasklist
+- [ ] set-pc-control
+- [ ] set-interlock
+- [ ] activate-keypads
+- [ ] set-door-passcodes
+- [ ] get-antipassback
+- [ ] set-antipassback
+- [ ] set-firstcard
+- [ ] restore-default-parameters
 
 
 ## To Be Done

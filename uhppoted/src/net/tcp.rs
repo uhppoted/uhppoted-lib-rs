@@ -61,6 +61,17 @@ pub fn send_to(_cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Durati
 
     dump("TCP", &format!("sent {} bytes to {}", 64, dest), request);
 
+    // ... set IPv4 doesn't return anything so fake it
+    if request[1] == 0x96 {
+        let mut reply = [0x00; 64];
+
+        reply[..4].copy_from_slice(&request[..4]); // header
+        reply[4..8].copy_from_slice(&request[4..8]); // controller
+        reply[8] = 0x01; // ok
+
+        return Ok(reply);
+    }
+
     let mut buffer = [0u8; 1024];
 
     loop {

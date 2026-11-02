@@ -7,6 +7,10 @@ CLI = cd examples/cli && cargo fmt && RUST_LOG=debug cargo run -- --debug --bind
 CONTROLLER ?= 405419896
 DEST ?= 192.168.1.125:60000
 
+ADDRESS ?= 192.168.1.125
+NETMASK ?= 255.255.255.0
+GATEWAY ?= 192.168.1.1
+
 clean:
 	cargo clean
 
@@ -54,7 +58,13 @@ find-controllers: build
 	$(CLI) find-controllers
 
 get-controller: build
-# 	$(CLI) get-controller --controller $(CONTROLLER)
+	$(CLI) get-controller --controller $(CONTROLLER)
 # 	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST)
 # 	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --udp
-	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --tcp
+# 	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --tcp
+
+set-IPv4: build
+	$(CLI) set-IPv4 --controller $(CONTROLLER) --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
+# 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
+# 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --udp --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
+# 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --tcp --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)

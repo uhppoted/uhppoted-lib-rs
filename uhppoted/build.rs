@@ -48,7 +48,8 @@ fn main() {
     {
         let file = Path::new("src/codec/generated/encode_tests.rs");
 
-        let generated = r#"
+        let generated = r#"use std::net::Ipv4Addr;
+
     #[test]
     fn find_controllers() {
         let expected: Msg = [
@@ -77,6 +78,24 @@ fn main() {
 
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn set_controller() {
+        let expected: Msg = [
+            0x17, 0x96, 0x00, 0x00, 0x78, 0x37, 0x2a, 0x18, 0xc0, 0xa8, 0x01, 0x7d, 0xff, 0xff, 0xff, 0x00,
+            0xc0, 0xa8, 0x01, 0x01, 0x55, 0xaa, 0xaa, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let address: Ipv4Addr = "192.168.1.125".parse().unwrap();
+        let netmask: Ipv4Addr = "255.255.255.0".parse().unwrap();
+        let gateway: Ipv4Addr = "192.168.1.1".parse().unwrap();
+
+        let result = set_IPv4_request(405419896, address, netmask, gateway).unwrap();
+
+        assert_eq!(result, expected);
+    }
     "#;
 
         println!("cargo:warning=... generating encode unit tests {}", file.display());
@@ -100,16 +119,36 @@ fn main() {
         ];
 
         let expected = GetControllerResponse {
-        controller: 405419896,
-        ip_address: "192.168.1.100".parse().unwrap(),
-        subnet_mask: "255.255.255.0".parse().unwrap(),
-        gateway: "192.168.1.1".parse().unwrap(),
-        mac_address: "00:12:23:34:45:56".to_string(),
-        version: "v8.92".to_string(),
-        date: "2018-11-05".parse().unwrap(),
+           controller: 405419896,
+           ip_address: "192.168.1.100".parse().unwrap(),
+           subnet_mask: "255.255.255.0".parse().unwrap(),
+           gateway: "192.168.1.1".parse().unwrap(),
+           mac_address: "00:12:23:34:45:56".to_string(),
+           version: "v8.92".to_string(),
+           date: "2018-11-05".parse().unwrap(),
         };
 
         let response = get_controller_response(&packet).unwrap();
+
+        assert_eq!(response, expected);
+    }
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn set_IPv4() {
+        let packet: Msg = [
+                0x17, 0x96, 0x00, 0x00, 0x78, 0x37, 0x2a, 0x18, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let expected = SetIPv4Response {
+           controller: 405419896,
+           ok: true,
+        };
+
+        let response = set_IPv4_response(&packet).unwrap();
 
         assert_eq!(response, expected);
     }

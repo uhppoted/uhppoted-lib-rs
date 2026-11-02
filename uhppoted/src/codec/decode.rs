@@ -56,8 +56,32 @@ impl codec::Decode for GetControllerResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct SetIPv4Response {
+    pub controller: u32,
+    pub ok: bool,
+}
+
+impl codec::Decode for SetIPv4Response {
+    fn decode(packet: &Msg) -> Result<SetIPv4Response> {
+        validate!(packet, 0x96);
+
+        let response = SetIPv4Response {
+            controller: unpack_uint32(packet, 4)?,
+            ok: unpack_bool(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
+}
+
+#[allow(non_snake_case)]
+pub fn set_IPv4_response(packet: &Msg) -> Result<SetIPv4Response> {
+    SetIPv4Response::decode(packet)
 }
 
 #[macro_export]
@@ -81,6 +105,10 @@ fn unpack_uint32(packet: &Msg, offset: usize) -> Result<u32> {
     bytes.clone_from_slice(&packet[offset..offset + 4]);
 
     Ok(u32::from_le_bytes(bytes))
+}
+
+fn unpack_bool(packet: &Msg, offset: usize) -> Result<bool> {
+    return Ok(packet[offset] != 0x00);
 }
 
 fn unpack_ipv4(packet: &Msg, offset: usize) -> Result<Ipv4Addr> {

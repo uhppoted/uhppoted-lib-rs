@@ -136,6 +136,17 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
 
     dump("UDP", &format!("sent {} bytes to {}", 64, cfg.broadcast), request);
 
+    // ... set IPv4 doesn't return anything so fake it
+    if request[1] == 0x96 {
+        let mut reply = [0x00; 64];
+
+        reply[..4].copy_from_slice(&request[..4]); // header
+        reply[4..8].copy_from_slice(&request[4..8]); // controller
+        reply[8] = 0x01; // ok
+
+        return Ok(reply);
+    }
+
     let mut buffer = [0u8; 1024];
 
     loop {
@@ -212,6 +223,17 @@ pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duratio
     socket.send(request)?;
 
     dump("UDP", &format!("sent {} bytes to {}", 64, dest), request);
+
+    // ... set IPv4 doesn't return anything so fake it
+    if request[1] == 0x96 {
+        let mut reply = [0x00; 64];
+
+        reply[..4].copy_from_slice(&request[..4]); // header
+        reply[4..8].copy_from_slice(&request[4..8]); // controller
+        reply[8] = 0x01; // ok
+
+        return Ok(reply);
+    }
 
     let mut buffer = [0u8; 1024];
 

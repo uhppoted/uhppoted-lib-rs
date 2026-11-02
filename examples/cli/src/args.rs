@@ -1,4 +1,4 @@
-use std::net::SocketAddrV4;
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 use clap::{Parser, Subcommand};
 use uhppoted::Transport;
@@ -32,6 +32,9 @@ pub enum Commands {
 
     #[command(name = "get-controller")]
     GetController(GetControllerArgs),
+
+    #[command(name = "set-IPv4")]
+    SetIPv4(SetIPv4Args),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -70,11 +73,33 @@ pub struct GetControllerArgs {
     pub transport: TransportArgs,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct SetIPv4Args {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub address: Ipv4Addr,
+
+    #[arg(long)]
+    pub netmask: Ipv4Addr,
+
+    #[arg(long)]
+    pub gateway: Ipv4Addr,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
             Commands::FindControllers { .. } => "find-controllers",
             Commands::GetController { .. } => "get-controller",
+            Commands::SetIPv4 { .. } => "set-IPv4",
         }
     }
 
@@ -82,11 +107,12 @@ impl Commands {
         match self {
             Commands::FindControllers(cmd) => cmd.handle(cfg),
             Commands::GetController(cmd) => cmd.handle(cfg),
+            Commands::SetIPv4(cmd) => cmd.handle(cfg),
         }
     }
 
     pub fn list() -> Vec<&'static str> {
-        vec!["find-controllers", "get-controller"]
+        vec!["find-controllers", "get-controller", "set-IPv4"]
     }
 }
 
@@ -99,5 +125,19 @@ impl FindControllerArgs {
 impl GetControllerArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_controller(cfg, self.controller, self.dest, self.transport);
+    }
+}
+
+impl SetIPv4Args {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::set_IPv4(
+            cfg,
+            self.controller,
+            self.dest,
+            self.transport,
+            self.address,
+            self.netmask,
+            self.gateway,
+        );
     }
 }

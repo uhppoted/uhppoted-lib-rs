@@ -48,8 +48,8 @@ package: release
 publish: release
 	@echo "Nothing to do
 
-debug: build
-	$(CLI) find-controllers
+debug: generate
+	cargo test --lib
 
 usage: build
 	$(CLI)

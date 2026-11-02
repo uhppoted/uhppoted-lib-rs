@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	// "os"
+	"os"
+
+	"codegen/encode"
 	// "codegen/decode"
-	// "codegen/encode"
 	// "codegen/integration-tests"
 )
 
@@ -21,29 +22,29 @@ var args = struct {
 func main() {
 	fmt.Printf("\n--- uhppoted-lib-rs::codegen\n\n")
 
-	// if len(os.Args) > 1 {
-	// 	for _, arg := range os.Args[1:] {
-	// 		switch arg {
-	// 		case "--encode":
-	// 			args.encode = true
+	if len(os.Args) > 1 {
+		for _, arg := range os.Args[1:] {
+			switch arg {
+			case "--encode":
+				args.encode = true
 
-	// 		case "--decode":
-	// 			args.decode = true
+			case "--decode":
+				args.decode = true
 
-	// 		case "--integrations-tests":
-	// 			args.integrationTests = true
+			case "--integrations-tests":
+				args.integrationTests = true
 
-	// 		case "--all":
-	// 			args.encode = true
-	// 			args.decode = true
-	// 			args.integrationTests = true
-	// 		}
-	// 	}
-	// }
+			case "--all":
+				args.encode = true
+				args.decode = true
+				args.integrationTests = true
+			}
+		}
+	}
 
-	// if args.encode {
-	// 	encode.UnitTests()
-	// }
+	if args.encode {
+		encode.UnitTests()
+	}
 
 	// if args.decode {
 	// 	decode.UnitTests()

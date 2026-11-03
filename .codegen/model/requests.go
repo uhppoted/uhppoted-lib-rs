@@ -8,7 +8,7 @@ import (
 var Requests = []types.Request{
 	lib.GetControllerRequest,
 	lib.SetIPv4Request,
-	// lib.GetTimeRequest,
+	lib.GetTimeRequest,
 	// lib.SetTimeRequest,
 	// lib.GetListenerRequest,
 	// lib.SetListenerRequest,

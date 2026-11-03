@@ -11,8 +11,9 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] config builder
 - [ ] CLI args
     - [ ] --debug: set log level
+    - (?) only log if debug
 
-- [ ] copy remaining lambda to udp.rs
+- [ ] copy _remaining_ lambda to udp.rs
 - [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
 - [ ] codegen - just use Go
 

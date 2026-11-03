@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
@@ -123,4 +124,28 @@ pub fn set_IPv4<T: controller::ControllerRef>(
     }
 
     Ok(response.ok)
+}
+
+pub fn get_time<T: controller::ControllerRef>(cfg: &Config, controller: T, timeout: Duration) -> Result<NaiveDateTime> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::get_time_request(id)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::get_time_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.date_time)
 }

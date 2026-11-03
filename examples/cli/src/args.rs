@@ -35,6 +35,9 @@ pub enum Commands {
 
     #[command(name = "set-IPv4")]
     SetIPv4(SetIPv4Args),
+
+    #[command(name = "get-time")]
+    GetTime(GetTimeArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -94,12 +97,25 @@ pub struct SetIPv4Args {
     pub gateway: Ipv4Addr,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct GetTimeArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
             Commands::FindControllers { .. } => "find-controllers",
             Commands::GetController { .. } => "get-controller",
             Commands::SetIPv4 { .. } => "set-IPv4",
+            Commands::GetTime { .. } => "get-time",
         }
     }
 
@@ -108,11 +124,12 @@ impl Commands {
             Commands::FindControllers(cmd) => cmd.handle(cfg),
             Commands::GetController(cmd) => cmd.handle(cfg),
             Commands::SetIPv4(cmd) => cmd.handle(cfg),
+            Commands::GetTime(cmd) => cmd.handle(cfg),
         }
     }
 
     pub fn list() -> Vec<&'static str> {
-        vec!["find-controllers", "get-controller", "set-IPv4"]
+        vec!["find-controllers", "get-controller", "set-IPv4", "get-time"]
     }
 }
 
@@ -139,5 +156,11 @@ impl SetIPv4Args {
             self.netmask,
             self.gateway,
         );
+    }
+}
+
+impl GetTimeArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::get_time(cfg, self.controller, self.dest, self.transport);
     }
 }

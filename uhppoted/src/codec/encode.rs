@@ -32,6 +32,18 @@ pub fn set_IPv4_request(controller: u32, address: Ipv4Addr, netmask: Ipv4Addr, g
     Ok(packet)
 }
 
+#[allow(non_snake_case)]
+pub fn get_time_request(controller: u32) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x32;
+
+    pack_uint32(controller, &mut packet, 4)?;
+
+    Ok(packet)
+}
+
 fn pack_uint32(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
     let bytes = v.to_le_bytes();
 

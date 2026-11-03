@@ -1,4 +1,4 @@
-use chrono::NaiveDate;
+use chrono::{NaiveDate, NaiveDateTime};
 use regex::Regex;
 use std::net::Ipv4Addr;
 
@@ -75,6 +75,25 @@ impl codec::Decode for SetIPv4Response {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GetTimeResponse {
+    pub controller: u32,
+    pub date_time: NaiveDateTime,
+}
+
+impl codec::Decode for GetTimeResponse {
+    fn decode(packet: &Msg) -> Result<GetTimeResponse> {
+        validate!(packet, 0x32);
+
+        let response = GetTimeResponse {
+            controller: unpack_uint32(packet, 4)?,
+            date_time: unpack_datetime(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -82,6 +101,10 @@ pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
 #[allow(non_snake_case)]
 pub fn set_IPv4_response(packet: &Msg) -> Result<SetIPv4Response> {
     SetIPv4Response::decode(packet)
+}
+
+pub fn get_time_response(packet: &Msg) -> Result<GetTimeResponse> {
+    GetTimeResponse::decode(packet)
 }
 
 #[macro_export]
@@ -148,6 +171,16 @@ fn unpack_date(packet: &Msg, offset: usize) -> Result<NaiveDate> {
     match NaiveDate::parse_from_str(&s, "%Y%m%d") {
         Ok(date) => Ok(date),
         Err(_) => Err(Error::from(format!("invalid date string {}", s))),
+    }
+}
+
+fn unpack_datetime(packet: &Msg, offset: usize) -> Result<NaiveDateTime> {
+    let slice: &[u8; 7] = packet[offset..offset + 7].try_into().unwrap();
+    let s: String = bcd2string!(slice);
+
+    match NaiveDateTime::parse_from_str(&s, "%Y%m%d%H%M%S") {
+        Ok(datetime) => return Ok(datetime),
+        Err(_) => Err(Error::from(format!("invalid date/time string {}", s))),
     }
 }
 

@@ -68,3 +68,6 @@ set-IPv4: build
 # 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
 # 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --udp --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
 # 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --tcp --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
+
+get-time: build
+	$(CLI) get-time --controller $(CONTROLLER)

@@ -9,11 +9,13 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] decode validate macro
 - [x] config builder
 - [x] codegen - just use Go
+- [x] copy _remaining_ lambda to udp.rs
+- [ ] copy _loop_ from _tcp.rs_
+
 - [ ] CLI args
     - [ ] --debug: set log level
     - (?) only log if debug
 
-- [ ] copy _remaining_ lambda to udp.rs
 - [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
 
 - [x] find-controllers

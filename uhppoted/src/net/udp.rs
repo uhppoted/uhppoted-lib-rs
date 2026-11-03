@@ -18,6 +18,7 @@ pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<M
     }
 
     let deadline = Instant::now() + timeout;
+    let remaining = || deadline.saturating_duration_since(Instant::now());
 
     // ... send-to-self
     //
@@ -60,13 +61,12 @@ pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<M
     let mut buffer = [0u8; 1024];
 
     loop {
-        let remaining = deadline.saturating_duration_since(Instant::now());
-
-        if remaining.is_zero() {
+        let _remaining = remaining();
+        if _remaining.is_zero() {
             break;
         }
 
-        socket.set_read_timeout(Some(remaining))?;
+        socket.set_read_timeout(Some(_remaining))?;
 
         match socket.recv_from(&mut buffer) {
             Ok((64, from)) => {
@@ -98,6 +98,7 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
     }
 
     let deadline = Instant::now() + timeout;
+    let remaining = || deadline.saturating_duration_since(Instant::now());
 
     // ... send-to-self
     //
@@ -150,13 +151,12 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
     let mut buffer = [0u8; 1024];
 
     loop {
-        let remaining = deadline.saturating_duration_since(Instant::now());
-
-        if remaining.is_zero() {
+        let _remaining = remaining();
+        if _remaining.is_zero() {
             return Err(ErrorKind::Timeout.into());
         }
 
-        socket.set_read_timeout(Some(remaining))?;
+        socket.set_read_timeout(Some(_remaining))?;
 
         match socket.recv_from(&mut buffer) {
             Ok((64, from)) => {
@@ -186,6 +186,7 @@ pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duratio
     }
 
     let deadline = Instant::now() + timeout;
+    let remaining = || deadline.saturating_duration_since(Instant::now());
 
     // ... send-to-self
     //
@@ -238,13 +239,12 @@ pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duratio
     let mut buffer = [0u8; 1024];
 
     loop {
-        let remaining = deadline.saturating_duration_since(Instant::now());
-
-        if remaining.is_zero() {
+        let _remaining = remaining();
+        if _remaining.is_zero() {
             return Err(ErrorKind::Timeout.into());
         }
 
-        socket.set_read_timeout(Some(remaining))?;
+        socket.set_read_timeout(Some(_remaining))?;
 
         match socket.recv_from(&mut buffer) {
             Ok((64, from)) => {

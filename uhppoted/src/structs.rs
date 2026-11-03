@@ -7,7 +7,8 @@ pub struct ControllerRecord {
     pub ip_address: Ipv4Addr,
     pub subnet_mask: Ipv4Addr,
     pub gateway: Ipv4Addr,
-    pub mac_address: String,
+    #[allow(non_snake_case)]
+    pub MAC_address: String,
     pub version: String,
     pub date: NaiveDate,
 }

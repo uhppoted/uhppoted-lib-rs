@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"codegen/decode"
 	"codegen/encode"
-	// "codegen/decode"
 	// "codegen/integration-tests"
 )
 
@@ -46,9 +46,9 @@ func main() {
 		encode.UnitTests()
 	}
 
-	// if args.decode {
-	// 	decode.UnitTests()
-	// }
+	if args.decode {
+		decode.UnitTests()
+	}
 
 	// if args.integrationTests {
 	// 	integration_tests.IntegrationTests()

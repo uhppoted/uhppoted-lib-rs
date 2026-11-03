@@ -33,7 +33,8 @@ pub struct GetControllerResponse {
     pub ip_address: Ipv4Addr,
     pub subnet_mask: Ipv4Addr,
     pub gateway: Ipv4Addr,
-    pub mac_address: String,
+    #[allow(non_snake_case)]
+    pub MAC_address: String,
     pub version: String,
     pub date: NaiveDate,
 }
@@ -47,7 +48,7 @@ impl codec::Decode for GetControllerResponse {
             ip_address: unpack_ipv4(packet, 8)?,
             subnet_mask: unpack_ipv4(packet, 12)?,
             gateway: unpack_ipv4(packet, 16)?,
-            mac_address: unpack_mac(packet, 20)?,
+            MAC_address: unpack_mac(packet, 20)?,
             version: unpack_version(packet, 26)?,
             date: unpack_date(packet, 28)?,
         };

@@ -48,7 +48,7 @@ pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<Controlle
                 ip_address: response.ip_address,
                 subnet_mask: response.subnet_mask,
                 gateway: response.gateway,
-                mac_address: response.mac_address,
+                MAC_address: response.MAC_address,
                 version: response.version,
                 date: response.date,
             })
@@ -88,7 +88,7 @@ pub fn get_controller<T: controller::ControllerRef>(
         ip_address: response.ip_address,
         subnet_mask: response.subnet_mask,
         gateway: response.gateway,
-        mac_address: response.mac_address,
+        MAC_address: response.MAC_address,
         version: response.version,
         date: response.date,
     })

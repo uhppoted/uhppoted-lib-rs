@@ -32,3 +32,4 @@ debug: build
 generate: build
 	./bin/codegen --all
 	cp .generated/codec/generated/encode_tests.rs ../uhppoted/src/codec/generated/encode_tests.rs
+	cp .generated/codec/generated/decode_tests.rs ../uhppoted/src/codec/generated/decode_tests.rs

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 	// "time"
-	// "unicode"
+	"unicode"
 )
 
 var Functions = template.FuncMap{
@@ -111,6 +111,16 @@ func SnakeCase(s string) string {
 	return strings.Join(tokens, "_")
 }
 
+func TitleCase(s string) string {
+	tokens := regexp.MustCompile(`\s+`).Split(s, -1)
+
+	for i, token := range tokens {
+		tokens[i] = capitalize(token)
+	}
+
+	return strings.Join(tokens, "")
+}
+
 // func IPv4(v any) string {
 // 	s := fmt.Sprintf("%v", v)
 // 	addr := netip.MustParseAddr(s).As4()
@@ -200,23 +210,23 @@ func SnakeCase(s string) string {
 // 	panic(fmt.Sprintf("invalid boolean (%v)", v))
 // }
 
-// func capitalize(s string) string {
-// 	runes := []rune(s)
+func capitalize(s string) string {
+	runes := []rune(s)
 
-// 	if len(runes) > 0 {
-// 		runes[0] = unicode.ToUpper(runes[0])
-// 	}
+	if len(runes) > 0 {
+		runes[0] = unicode.ToUpper(runes[0])
+	}
 
-// 	if strings.ToLower(string(runes)) == "ip" {
-// 		return "IP"
-// 	}
+	if strings.ToLower(string(runes)) == "ip" {
+		return "IP"
+	}
 
-// 	if strings.ToLower(string(runes)) == "ipv4" {
-// 		return "IPv4"
-// 	}
+	if strings.ToLower(string(runes)) == "ipv4" {
+		return "IPv4"
+	}
 
-// 	return string(runes)
-// }
+	return string(runes)
+}
 
 // func rpad(length int, s string) string {
 // 	if len(s) >= length {

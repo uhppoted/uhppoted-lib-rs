@@ -1,9 +1,51 @@
+use chrono::NaiveDateTime;
 use std::net::Ipv4Addr;
 
 use super::Msg;
 use super::Result;
+use super::error::Error;
 
 const MAGIC: u32 = 0x55aaaa55;
+
+#[macro_export]
+macro_rules! string2bcd {
+    ($bcd:expr, $size:expr) => {{
+        let mut nibbles: [u8; 2 * $size] = [0; 2 * $size];
+        let mut bytes: [u8; $size] = [0; $size];
+        let mut ix = 0;
+
+        if $bcd.len() % 2 != 0 {
+            ix = 1;
+        }
+
+        for ch in $bcd.chars() {
+            nibbles[ix] = bcd(ch)?;
+            ix += 1;
+        }
+
+        for (i, pair) in nibbles.chunks(2).enumerate() {
+            bytes[i] = (pair[0] << 4) | pair[1];
+        }
+
+        bytes
+    }};
+}
+
+fn bcd(ch: char) -> Result<u8> {
+    match ch {
+        '0' => Ok(0),
+        '1' => Ok(1),
+        '2' => Ok(2),
+        '3' => Ok(3),
+        '4' => Ok(4),
+        '5' => Ok(5),
+        '6' => Ok(6),
+        '7' => Ok(7),
+        '8' => Ok(8),
+        '9' => Ok(9),
+        _ => Err(Error::from(format!("invalid BCD digit {ch}"))),
+    }
+}
 
 pub fn get_controller_request(controller: u32) -> Result<Msg> {
     let mut packet = [0x00; 64];
@@ -44,6 +86,19 @@ pub fn get_time_request(controller: u32) -> Result<Msg> {
     Ok(packet)
 }
 
+#[allow(non_snake_case)]
+pub fn set_time_request(controller: u32, datetime: NaiveDateTime) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x30;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_datetime(datetime, &mut packet, 8)?;
+
+    Ok(packet)
+}
+
 fn pack_uint32(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
     let bytes = v.to_le_bytes();
 
@@ -55,6 +110,14 @@ fn pack_ipv4(v: Ipv4Addr, packet: &mut Msg, offset: usize) -> Result<()> {
     let addr = v.octets();
 
     packet[offset..offset + 4].clone_from_slice(&addr);
+    Ok(())
+}
+
+fn pack_datetime(v: NaiveDateTime, packet: &mut Msg, offset: usize) -> Result<()> {
+    let s = v.format("%Y%m%d%H%M%S");
+    let bcd = string2bcd!(s.to_string(), 7);
+
+    packet[offset..offset + 7].clone_from_slice(&bcd);
     Ok(())
 }
 

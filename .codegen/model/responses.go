@@ -10,7 +10,7 @@ var Responses = []types.Response{
 	lib.GetControllerResponse,
 	lib.SetIPv4Response,
 	lib.GetTimeResponse,
-	// lib.SetTimeResponse,
+	lib.SetTimeResponse,
 	// lib.GetListenerResponse,
 	// lib.SetListenerResponse,
 	// lib.GetStatusResponse,

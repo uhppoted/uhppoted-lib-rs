@@ -102,7 +102,7 @@ func RustName(s string) string {
 // }
 
 func SnakeCase(s string) string {
-	tokens := regexp.MustCompile(`\s+`).Split(s, -1)
+	tokens := regexp.MustCompile(`\s+|-`).Split(s, -1)
 
 	for i, token := range tokens[1:] {
 		tokens[i+1] = strings.ToLower(token)

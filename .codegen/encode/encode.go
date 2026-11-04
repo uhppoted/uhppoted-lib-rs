@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/netip"
 	"os"
-	// "strings"
 	"text/template"
-	// "time"
+	"time"
 
 	lib "codeberg.org/uhppoted/uhppoted-codegen/model/types"
 
@@ -135,8 +134,13 @@ func args(t lib.RequestTest) []arg {
 				Comma: comma,
 			})
 
-		// 		case a.Type == "datetime":
-		// 			args = append(args, arg{datetime(a.Value), comma})
+		case a.Type == "datetime":
+			args = append(args, arg{
+				Name:  a.Name,
+				Type:  "",
+				Value: datetime(a.Value),
+				Comma: comma,
+			})
 
 		// 		case a.Type == "date":
 		// 			args = append(args, arg{date(a.Value), comma})
@@ -186,19 +190,15 @@ func ipv4(v any) string {
 	return fmt.Sprintf(`"%v".parse().unwrap()`, addr)
 }
 
-// func datetime(v any) string {
-// 	s := fmt.Sprintf("%v", v)
-// 	if dt, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
-// 		panic(fmt.Sprintf("invalid date (%v)", v))
-// 	} else {
-// 		year, month, day := dt.Date()
+func datetime(v any) string {
+	s := fmt.Sprintf("%v", v)
 
-// 		return fmt.Sprintf(
-// 			"(Year => %v, Month => %v, Day => %v, Hour => %v, Minute => %v, Second => %v)",
-// 			uint16(year), uint8(month), uint8(day),
-// 			uint8(dt.Hour()), uint8(dt.Minute()), uint8(dt.Second()))
-// 	}
-// }
+	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid date (%v)", v))
+	} else {
+		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, datetime.Format("2006-01-02 15:04:05"))
+	}
+}
 
 // func date(v any) string {
 // 	s := fmt.Sprintf("%v", v)

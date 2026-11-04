@@ -1,3 +1,4 @@
+use chrono::Local;
 use std::net::{Ipv4Addr, SocketAddrV4};
 
 use clap::{Parser, Subcommand};
@@ -38,6 +39,9 @@ pub enum Commands {
 
     #[command(name = "get-time")]
     GetTime(GetTimeArgs),
+
+    #[command(name = "set-time")]
+    SetTime(SetTimeArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -109,6 +113,18 @@ pub struct GetTimeArgs {
     pub transport: TransportArgs,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct SetTimeArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -116,6 +132,7 @@ impl Commands {
             Commands::GetController { .. } => "get-controller",
             Commands::SetIPv4 { .. } => "set-IPv4",
             Commands::GetTime { .. } => "get-time",
+            Commands::SetTime { .. } => "set-time",
         }
     }
 
@@ -125,6 +142,7 @@ impl Commands {
             Commands::GetController(cmd) => cmd.handle(cfg),
             Commands::SetIPv4(cmd) => cmd.handle(cfg),
             Commands::GetTime(cmd) => cmd.handle(cfg),
+            Commands::SetTime(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -162,5 +180,13 @@ impl SetIPv4Args {
 impl GetTimeArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_time(cfg, self.controller, self.dest, self.transport);
+    }
+}
+
+impl SetTimeArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        let datetime = Local::now().naive_local();
+
+        commands::set_time(cfg, self.controller, self.dest, self.transport, datetime);
     }
 }

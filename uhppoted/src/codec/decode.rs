@@ -95,6 +95,25 @@ impl codec::Decode for GetTimeResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct SetTimeResponse {
+    pub controller: u32,
+    pub date_time: NaiveDateTime,
+}
+
+impl codec::Decode for SetTimeResponse {
+    fn decode(packet: &Msg) -> Result<SetTimeResponse> {
+        validate!(packet, 0x30);
+
+        let response = SetTimeResponse {
+            controller: unpack_uint32(packet, 4)?,
+            date_time: unpack_datetime(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -106,6 +125,10 @@ pub fn set_IPv4_response(packet: &Msg) -> Result<SetIPv4Response> {
 
 pub fn get_time_response(packet: &Msg) -> Result<GetTimeResponse> {
     GetTimeResponse::decode(packet)
+}
+
+pub fn set_time_response(packet: &Msg) -> Result<SetTimeResponse> {
+    SetTimeResponse::decode(packet)
 }
 
 #[macro_export]

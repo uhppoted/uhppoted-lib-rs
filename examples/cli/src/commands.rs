@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
@@ -85,6 +86,31 @@ pub fn get_time(
         uhppoted::get_time(&cfg, c, TIMEOUT)
     } else {
         uhppoted::get_time(&cfg, controller, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
+pub fn set_time(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+    datetime: NaiveDateTime,
+) {
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::set_time(&cfg, c, datetime, TIMEOUT)
+    } else {
+        uhppoted::set_time(&cfg, controller, datetime, TIMEOUT)
     };
 
     match response {

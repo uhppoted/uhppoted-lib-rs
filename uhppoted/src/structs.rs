@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use std::net::Ipv4Addr;
 
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct ControllerRecord {
     pub controller: u32,
     pub ip_address: Ipv4Addr,

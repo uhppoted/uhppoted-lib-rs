@@ -174,7 +174,7 @@ macro_rules! bcd2string {
 }
 
 fn unpack_uint8(packet: &Msg, offset: usize) -> Result<u8> {
-    return Ok(packet[offset]);
+    Ok(packet[offset])
 }
 
 fn unpack_uint16(packet: &Msg, offset: usize) -> Result<u16> {
@@ -194,7 +194,7 @@ fn unpack_uint32(packet: &Msg, offset: usize) -> Result<u32> {
 }
 
 fn unpack_bool(packet: &Msg, offset: usize) -> Result<bool> {
-    return Ok(packet[offset] != 0x00);
+    Ok(packet[offset] != 0x00)
 }
 
 #[allow(non_snake_case)]
@@ -244,7 +244,7 @@ fn unpack_datetime(packet: &Msg, offset: usize) -> Result<NaiveDateTime> {
     let s: String = bcd2string!(slice);
 
     match NaiveDateTime::parse_from_str(&s, "%Y%m%d%H%M%S") {
-        Ok(datetime) => return Ok(datetime),
+        Ok(datetime) => Ok(datetime),
         Err(_) => Err(Error::from(format!("invalid date/time string {}", s))),
     }
 }

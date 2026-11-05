@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
 #[path = "error.rs"]
@@ -34,6 +34,7 @@ pub type Transport = controller::Transport;
 pub type Result<T> = std::result::Result<T, error::Error>;
 
 pub type ControllerRecord = structs::ControllerRecord;
+pub type ListenerRecord = structs::ListenerRecord;
 
 pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<ControllerRecord>> {
     let request = encode::get_controller_request(0)?;
@@ -177,4 +178,35 @@ pub fn set_time<T: controller::ControllerRef>(
     }
 
     Ok(response.date_time)
+}
+
+pub fn get_listener<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    timeout: Duration,
+) -> Result<ListenerRecord> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::get_listener_request(id)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::get_listener_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(ListenerRecord {
+        address: SocketAddrV4::new(response.address, response.port),
+        interval: response.interval,
+    })
 }

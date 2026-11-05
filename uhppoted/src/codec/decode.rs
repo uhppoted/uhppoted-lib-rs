@@ -45,10 +45,10 @@ impl codec::Decode for GetControllerResponse {
 
         let response = GetControllerResponse {
             controller: unpack_uint32(packet, 4)?,
-            ip_address: unpack_ipv4(packet, 8)?,
-            subnet_mask: unpack_ipv4(packet, 12)?,
-            gateway: unpack_ipv4(packet, 16)?,
-            MAC_address: unpack_mac(packet, 20)?,
+            ip_address: unpack_IPv4(packet, 8)?,
+            subnet_mask: unpack_IPv4(packet, 12)?,
+            gateway: unpack_IPv4(packet, 16)?,
+            MAC_address: unpack_MAC(packet, 20)?,
             version: unpack_version(packet, 26)?,
             date: unpack_date(packet, 28)?,
         };
@@ -114,6 +114,29 @@ impl codec::Decode for SetTimeResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GetListenerResponse {
+    pub controller: u32,
+    pub address: Ipv4Addr,
+    pub port: u16,
+    pub interval: u8,
+}
+
+impl codec::Decode for GetListenerResponse {
+    fn decode(packet: &Msg) -> Result<GetListenerResponse> {
+        validate!(packet, 0x92);
+
+        let response = GetListenerResponse {
+            controller: unpack_uint32(packet, 4)?,
+            address: unpack_IPv4(packet, 8)?,
+            port: unpack_uint16(packet, 12)?,
+            interval: unpack_uint8(packet, 14)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -131,6 +154,10 @@ pub fn set_time_response(packet: &Msg) -> Result<SetTimeResponse> {
     SetTimeResponse::decode(packet)
 }
 
+pub fn get_listener_response(packet: &Msg) -> Result<GetListenerResponse> {
+    GetListenerResponse::decode(packet)
+}
+
 #[macro_export]
 macro_rules! bcd2string {
     ($slice:expr) => {{
@@ -146,6 +173,18 @@ macro_rules! bcd2string {
     }};
 }
 
+fn unpack_uint8(packet: &Msg, offset: usize) -> Result<u8> {
+    return Ok(packet[offset]);
+}
+
+fn unpack_uint16(packet: &Msg, offset: usize) -> Result<u16> {
+    let mut bytes: [u8; 2] = [0; 2];
+
+    bytes.clone_from_slice(&packet[offset..offset + 2]);
+
+    Ok(u16::from_le_bytes(bytes))
+}
+
 fn unpack_uint32(packet: &Msg, offset: usize) -> Result<u32> {
     let mut bytes: [u8; 4] = [0; 4];
 
@@ -158,7 +197,8 @@ fn unpack_bool(packet: &Msg, offset: usize) -> Result<bool> {
     return Ok(packet[offset] != 0x00);
 }
 
-fn unpack_ipv4(packet: &Msg, offset: usize) -> Result<Ipv4Addr> {
+#[allow(non_snake_case)]
+fn unpack_IPv4(packet: &Msg, offset: usize) -> Result<Ipv4Addr> {
     let u0 = packet[offset];
     let u1 = packet[offset + 1];
     let u2 = packet[offset + 2];
@@ -167,7 +207,8 @@ fn unpack_ipv4(packet: &Msg, offset: usize) -> Result<Ipv4Addr> {
     Ok(Ipv4Addr::new(u0, u1, u2, u3))
 }
 
-fn unpack_mac(packet: &Msg, offset: usize) -> Result<String> {
+#[allow(non_snake_case)]
+fn unpack_MAC(packet: &Msg, offset: usize) -> Result<String> {
     let mac = format!(
         "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
         packet[offset],

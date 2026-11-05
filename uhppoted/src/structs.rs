@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct ControllerRecord {
@@ -11,4 +11,10 @@ pub struct ControllerRecord {
     pub MAC_address: String,
     pub version: String,
     pub date: NaiveDate,
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub struct ListenerRecord {
+    pub address: SocketAddrV4,
+    pub interval: u8,
 }

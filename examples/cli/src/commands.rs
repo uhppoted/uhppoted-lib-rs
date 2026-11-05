@@ -119,6 +119,30 @@ pub fn set_time(
     };
 }
 
+pub fn get_listener(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+) {
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::get_listener(&cfg, c, TIMEOUT)
+    } else {
+        uhppoted::get_listener(&cfg, controller, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
 fn error(e: uhppoted::error::Error) {
     println!();
     println!("   *** ERROR: {e}");

@@ -23,7 +23,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] set-IPv4
 - [x] get-time
 - [x] set-time
-- [ ] get-listener
+- [x] get-listener
 - [ ] set-listener
 - [ ] get-door
 - [ ] set-door

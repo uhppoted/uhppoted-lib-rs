@@ -10,7 +10,7 @@ var Requests = []types.Request{
 	lib.SetIPv4Request,
 	lib.GetTimeRequest,
 	lib.SetTimeRequest,
-	// lib.GetListenerRequest,
+	lib.GetListenerRequest,
 	// lib.SetListenerRequest,
 	// lib.GetStatusRequest,
 	// lib.GetListenerAddrPortRequest,

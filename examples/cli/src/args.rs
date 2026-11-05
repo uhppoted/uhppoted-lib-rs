@@ -42,6 +42,9 @@ pub enum Commands {
 
     #[command(name = "set-time")]
     SetTime(SetTimeArgs),
+
+    #[command(name = "get-listener")]
+    GetListener(GetListenerArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -125,6 +128,18 @@ pub struct SetTimeArgs {
     pub transport: TransportArgs,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct GetListenerArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -133,6 +148,7 @@ impl Commands {
             Commands::SetIPv4 { .. } => "set-IPv4",
             Commands::GetTime { .. } => "get-time",
             Commands::SetTime { .. } => "set-time",
+            Commands::GetListener { .. } => "get-listener",
         }
     }
 
@@ -143,11 +159,18 @@ impl Commands {
             Commands::SetIPv4(cmd) => cmd.handle(cfg),
             Commands::GetTime(cmd) => cmd.handle(cfg),
             Commands::SetTime(cmd) => cmd.handle(cfg),
+            Commands::GetListener(cmd) => cmd.handle(cfg),
         }
     }
 
     pub fn list() -> Vec<&'static str> {
-        vec!["find-controllers", "get-controller", "set-IPv4", "get-time"]
+        vec![
+            "find-controllers",
+            "get-controller",
+            "set-IPv4",
+            "get-time",
+            "get-listener",
+        ]
     }
 }
 
@@ -188,5 +211,11 @@ impl SetTimeArgs {
         let datetime = Local::now().naive_local();
 
         commands::set_time(cfg, self.controller, self.dest, self.transport, datetime);
+    }
+}
+
+impl GetListenerArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::get_listener(cfg, self.controller, self.dest, self.transport);
     }
 }

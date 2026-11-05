@@ -74,3 +74,6 @@ get-time: build
 
 set-time: build
 	$(CLI) set-time --controller $(CONTROLLER)
+
+get-listener: build
+	$(CLI) get-listener --controller $(CONTROLLER)

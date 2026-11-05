@@ -11,7 +11,7 @@ var Responses = []types.Response{
 	lib.SetIPv4Response,
 	lib.GetTimeResponse,
 	lib.SetTimeResponse,
-	// lib.GetListenerResponse,
+	lib.GetListenerResponse,
 	// lib.SetListenerResponse,
 	// lib.GetStatusResponse,
 	// lib.GetListenerAddrPortResponse,

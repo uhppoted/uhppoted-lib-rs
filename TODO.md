@@ -11,12 +11,15 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] codegen - just use Go
 - [x] copy _remaining_ lambda to udp.rs
 - [ ] copy _loop_ from _tcp.rs_
+- [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
+- [ ] README API
+- [ ] API.md
+- [ ] CHANGELOG
 
-- [ ] CLI args
+- [ ] CLI
+    - [ ] clean up/restructure
     - [ ] --debug: set log level
     - (?) only log if debug
-
-- [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
 
 - [x] find-controllers
 - [x] get-controller

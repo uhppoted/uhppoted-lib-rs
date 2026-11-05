@@ -8,7 +8,7 @@ use uhppoted::ListenerRecord;
 #[path = "stub.rs"]
 mod stub;
 
-const TIMEOUT: Duration = Duration::from_millis(1250);
+const TIMEOUT: Duration = Duration::from_millis(500);
 
 #[test]
 fn test_find_controllers() {

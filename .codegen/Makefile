@@ -28,8 +28,10 @@ vet:
 	go vet ./...
 
 debug: build
+	./bin/codegen --integration-tests
 
 generate: build
 	./bin/codegen --all
-	cp .generated/codec/generated/encode_tests.rs ../uhppoted/src/codec/generated/encode_tests.rs
-	cp .generated/codec/generated/decode_tests.rs ../uhppoted/src/codec/generated/decode_tests.rs
+	cp .generated/codec/encode_tests.rs ../uhppoted/src/codec/generated/encode_tests.rs
+	cp .generated/codec/decode_tests.rs ../uhppoted/src/codec/generated/decode_tests.rs
+	cp .generated/integration-tests/messages.rs ../uhppoted/tests/generated/messages.rs

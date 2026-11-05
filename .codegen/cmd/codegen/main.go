@@ -6,7 +6,7 @@ import (
 
 	"codegen/decode"
 	"codegen/encode"
-	// "codegen/integration-tests"
+	"codegen/integration-tests"
 )
 
 var args = struct {
@@ -31,7 +31,7 @@ func main() {
 			case "--decode":
 				args.decode = true
 
-			case "--integrations-tests":
+			case "--integration-tests":
 				args.integrationTests = true
 
 			case "--all":
@@ -50,7 +50,7 @@ func main() {
 		decode.UnitTests()
 	}
 
-	// if args.integrationTests {
-	// 	integration_tests.IntegrationTests()
-	// }
+	if args.integrationTests {
+		integration_tests.IntegrationTests()
+	}
 }

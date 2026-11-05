@@ -22,6 +22,8 @@ update:
 
 format:
 	cargo fmt --package uhppoted
+	rustfmt uhppoted/tests/generated/*
+	rustfmt uhppoted/src/codec/generated/*
 
 build: format
 	mkdir -p uhppoted/src/generated

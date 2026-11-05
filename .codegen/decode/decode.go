@@ -40,11 +40,11 @@ func UnitTests() {
 
 	tests := transmogrify(model.Responses)
 
-	if err := os.MkdirAll(".generated/codec/generated", 0750); err != nil {
+	if err := os.MkdirAll(".generated/codec", 0750); err != nil {
 		log.Fatal(err)
 	}
 
-	const file = ".generated/codec/generated/decode_tests.rs"
+	const file = ".generated/codec/decode_tests.rs"
 
 	if f, err := os.Create(file); err != nil {
 		log.Fatalf("%v", err)

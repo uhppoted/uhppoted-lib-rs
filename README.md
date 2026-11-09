@@ -1,5 +1,14 @@
 ![build](https://github.com/uhppoted/uhppoted-lib-rs/workflows/build/badge.svg)
 
+<div align="center">
+
+_The primary repository for this project is hosted on codeberg: https://codeberg.org/uhppoted/uhppoted-lib-rs_
+
+_The [github repository](https://github.com/uhppoted/uhppoted-lib-rs) will be kept up to date and maintained as a courtesy (and for archival
+releases) but please use _codeberg_ for reporting issues, etc._
+</div>
+
+
 # uhppoted-lib-rs
 
 Rust crate for interfacing to the UHPPOTE access controllers.

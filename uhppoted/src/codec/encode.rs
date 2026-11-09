@@ -66,15 +66,14 @@ pub fn set_IPv4_request(controller: u32, address: Ipv4Addr, netmask: Ipv4Addr, g
     packet[1] = 0x96;
 
     pack_uint32(controller, &mut packet, 4)?;
-    pack_ipv4(address, &mut packet, 8)?;
-    pack_ipv4(netmask, &mut packet, 12)?;
-    pack_ipv4(gateway, &mut packet, 16)?;
+    pack_IPv4(address, &mut packet, 8)?;
+    pack_IPv4(netmask, &mut packet, 12)?;
+    pack_IPv4(gateway, &mut packet, 16)?;
     pack_uint32(MAGIC, &mut packet, 20)?;
 
     Ok(packet)
 }
 
-#[allow(non_snake_case)]
 pub fn get_time_request(controller: u32) -> Result<Msg> {
     let mut packet = [0x00; 64];
 
@@ -86,7 +85,6 @@ pub fn get_time_request(controller: u32) -> Result<Msg> {
     Ok(packet)
 }
 
-#[allow(non_snake_case)]
 pub fn set_time_request(controller: u32, datetime: NaiveDateTime) -> Result<Msg> {
     let mut packet = [0x00; 64];
 
@@ -99,7 +97,6 @@ pub fn set_time_request(controller: u32, datetime: NaiveDateTime) -> Result<Msg>
     Ok(packet)
 }
 
-#[allow(non_snake_case)]
 pub fn get_listener_request(controller: u32) -> Result<Msg> {
     let mut packet = [0x00; 64];
 
@@ -111,6 +108,32 @@ pub fn get_listener_request(controller: u32) -> Result<Msg> {
     Ok(packet)
 }
 
+pub fn set_listener_request(controller: u32, address: Ipv4Addr, port: u16, interval: u8) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x90;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_IPv4(address, &mut packet, 8)?;
+    pack_uint16(port, &mut packet, 12)?;
+    pack_uint8(interval, &mut packet, 14)?;
+
+    Ok(packet)
+}
+
+fn pack_uint8(v: u8, packet: &mut Msg, offset: usize) -> Result<()> {
+    packet[offset] = v;
+    Ok(())
+}
+
+fn pack_uint16(v: u16, packet: &mut Msg, offset: usize) -> Result<()> {
+    let bytes = v.to_le_bytes();
+
+    packet[offset..offset + 2].clone_from_slice(&bytes);
+    Ok(())
+}
+
 fn pack_uint32(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
     let bytes = v.to_le_bytes();
 
@@ -118,7 +141,8 @@ fn pack_uint32(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
     Ok(())
 }
 
-fn pack_ipv4(v: Ipv4Addr, packet: &mut Msg, offset: usize) -> Result<()> {
+#[allow(non_snake_case)]
+fn pack_IPv4(v: Ipv4Addr, packet: &mut Msg, offset: usize) -> Result<()> {
     let addr = v.octets();
 
     packet[offset..offset + 4].clone_from_slice(&addr);

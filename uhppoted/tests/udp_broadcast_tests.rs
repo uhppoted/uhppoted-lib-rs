@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
 use uhppoted::ControllerRecord;
@@ -128,6 +128,21 @@ fn test_get_listener() {
     let controller: u32 = 405419896;
 
     let result = uhppoted::get_listener(&stub.cfg, controller, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_set_listener() {
+    let stub = stub::start();
+
+    let expected = true;
+
+    let controller: u32 = 405419897;
+    let address: SocketAddrV4 = "192.168.1.100:60001".parse().unwrap();
+    let interval: Option<u8> = Some(17);
+
+    let result = uhppoted::set_listener(&stub.cfg, controller, address, interval, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
 }

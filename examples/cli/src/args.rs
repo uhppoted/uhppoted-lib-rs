@@ -45,6 +45,9 @@ pub enum Commands {
 
     #[command(name = "get-listener")]
     GetListener(GetListenerArgs),
+
+    #[command(name = "set-listener")]
+    SetListener(SetListenerArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -140,6 +143,24 @@ pub struct GetListenerArgs {
     pub transport: TransportArgs,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct SetListenerArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub address: SocketAddrV4,
+
+    #[arg(long)]
+    pub interval: Option<u8>,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -149,6 +170,7 @@ impl Commands {
             Commands::GetTime { .. } => "get-time",
             Commands::SetTime { .. } => "set-time",
             Commands::GetListener { .. } => "get-listener",
+            Commands::SetListener { .. } => "set-listener",
         }
     }
 
@@ -160,6 +182,7 @@ impl Commands {
             Commands::GetTime(cmd) => cmd.handle(cfg),
             Commands::SetTime(cmd) => cmd.handle(cfg),
             Commands::GetListener(cmd) => cmd.handle(cfg),
+            Commands::SetListener(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -170,6 +193,7 @@ impl Commands {
             "set-IPv4",
             "get-time",
             "get-listener",
+            "set-listener",
         ]
     }
 }
@@ -217,5 +241,18 @@ impl SetTimeArgs {
 impl GetListenerArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_listener(cfg, self.controller, self.dest, self.transport);
+    }
+}
+
+impl SetListenerArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::set_listener(
+            cfg,
+            self.controller,
+            self.dest,
+            self.transport,
+            self.address,
+            self.interval,
+        );
     }
 }

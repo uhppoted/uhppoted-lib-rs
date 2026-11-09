@@ -13,7 +13,7 @@ var API = []types.Function{
 	lib.GetTime,
 	lib.SetTime,
 	lib.GetListener,
-	// lib.SetListenerAddrPort,
+	lib.SetListenerAddrPort,
 	// GetStatusRecord,
 	// lib.GetDoor,
 	// lib.SetDoor,

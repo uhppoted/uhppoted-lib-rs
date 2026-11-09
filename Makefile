@@ -10,6 +10,7 @@ DEST ?= 192.168.1.125:60000
 ADDRESS ?= 192.168.1.125
 NETMASK ?= 255.255.255.0
 GATEWAY ?= 192.168.1.1
+LISTENER ?= 192.168.1.125:60001
 
 clean:
 	cargo clean
@@ -36,7 +37,7 @@ lint:
 	cargo clippy
 
 integration-tests: build
-	cargo test --test udp_broadcast_tests
+	cargo test --test udp_broadcast_tests -- --nocapture
 
 build-all: build test lint integration-tests
 	cd examples/cli && cargo fmt && cargo build
@@ -66,8 +67,8 @@ get-controller: build
 # 	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --tcp
 
 set-IPv4: build
-	$(CLI) set-IPv4 --controller $(CONTROLLER) --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
-# 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
+	$(CLI) set-IPv4 --controller $(CONTROLLER)                      --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
+# 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST)       --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
 # 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --udp --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
 # 	$(CLI) set-IPv4 --controller $(CONTROLLER) --dest $(DEST) --tcp --address $(ADDRESS) --netmask $(NETMASK) --gateway $(GATEWAY)
 
@@ -79,3 +80,8 @@ set-time: build
 
 get-listener: build
 	$(CLI) get-listener --controller $(CONTROLLER)
+
+set-listener: build
+	$(CLI) set-listener --controller $(CONTROLLER) --address $(LISTENER)
+	$(CLI) set-listener --controller $(CONTROLLER) --address $(LISTENER) --interval 30
+

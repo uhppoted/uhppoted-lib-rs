@@ -11,7 +11,7 @@ var Requests = []types.Request{
 	lib.GetTimeRequest,
 	lib.SetTimeRequest,
 	lib.GetListenerRequest,
-	// lib.SetListenerRequest,
+	lib.SetListenerRequest,
 	// lib.GetStatusRequest,
 	// lib.GetListenerAddrPortRequest,
 	// lib.SetListenerAddrPortRequest,

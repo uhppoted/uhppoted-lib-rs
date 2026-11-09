@@ -210,3 +210,36 @@ pub fn get_listener<T: controller::ControllerRef>(
         interval: response.interval,
     })
 }
+
+pub fn set_listener<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    address: SocketAddrV4,
+    interval: Option<u8>,
+    timeout: Duration,
+) -> Result<bool> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = match interval {
+        Some(v) => encode::set_listener_request(id, *address.ip(), address.port(), v)?,
+        _ => encode::set_listener_request(id, *address.ip(), address.port(), 0)?,
+    };
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::set_listener_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.ok)
+}

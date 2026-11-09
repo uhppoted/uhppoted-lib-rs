@@ -12,9 +12,10 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] copy _remaining_ lambda to udp.rs
 - [ ] copy _loop_ from _tcp.rs_
 - [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
-- [ ] README API
+- [ ] README API summary
 - [ ] API.md
 - [ ] CHANGELOG
+- [ ] docstrings
 
 - [ ] CLI
     - [ ] clean up/restructure

@@ -137,6 +137,25 @@ impl codec::Decode for GetListenerResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct SetListenerResponse {
+    pub controller: u32,
+    pub ok: bool,
+}
+
+impl codec::Decode for SetListenerResponse {
+    fn decode(packet: &Msg) -> Result<SetListenerResponse> {
+        validate!(packet, 0x90);
+
+        let response = SetListenerResponse {
+            controller: unpack_uint32(packet, 4)?,
+            ok: unpack_bool(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -156,6 +175,10 @@ pub fn set_time_response(packet: &Msg) -> Result<SetTimeResponse> {
 
 pub fn get_listener_response(packet: &Msg) -> Result<GetListenerResponse> {
     GetListenerResponse::decode(packet)
+}
+
+pub fn set_listener_response(packet: &Msg) -> Result<SetListenerResponse> {
+    SetListenerResponse::decode(packet)
 }
 
 #[macro_export]

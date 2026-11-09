@@ -28,7 +28,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] get-time
 - [x] set-time
 - [x] get-listener
-- [ ] set-listener
+- [x] set-listener
 - [ ] get-door
 - [ ] set-door
 - [ ] open-door

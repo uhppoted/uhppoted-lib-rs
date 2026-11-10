@@ -140,13 +140,31 @@ func values(t lib.ResponseTest) []val {
 		case a.Type == "date":
 			values = append(values, val{
 				Name:  codegen.SnakeCase(a.Name),
-				Value: date(a.Value),
+				Value: dateOnly(a.Value),
+			})
+
+		case a.Type == "shortdate":
+			values = append(values, val{
+				Name:  codegen.SnakeCase(a.Name),
+				Value: shortDate(a.Value),
+			})
+
+		case a.Type == "time":
+			values = append(values, val{
+				Name:  codegen.SnakeCase(a.Name),
+				Value: timeOnly(a.Value),
 			})
 
 		case a.Type == "datetime":
 			values = append(values, val{
 				Name:  codegen.SnakeCase(a.Name),
 				Value: datetime(a.Value),
+			})
+
+		case a.Type == "optional datetime":
+			values = append(values, val{
+				Name:  codegen.SnakeCase(a.Name),
+				Value: optionalDateTime(a.Value),
 			})
 
 		default:
@@ -173,13 +191,33 @@ func str(v any) string {
 	return fmt.Sprintf(`"%v".to_string()`, s)
 }
 
-func date(v any) string {
+func dateOnly(v any) string {
 	s := fmt.Sprintf("%v", v)
 
 	if date, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
 		panic(fmt.Sprintf("invalid date (%v)", v))
 	} else {
 		return fmt.Sprintf(`"%v".parse().unwrap()`, date.Format("2006-01-02"))
+	}
+}
+
+func shortDate(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if date, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid date (%v)", v))
+	} else {
+		return fmt.Sprintf(`NaiveDate::parse_from_str("%v", "%%y-%%m-%%d").unwrap()`, date.Format("06-01-02"))
+	}
+}
+
+func timeOnly(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if t, err := time.ParseInLocation("15:04:05", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid time (%v)", v))
+	} else {
+		return fmt.Sprintf(`NaiveTime::parse_from_str("%v", "%%H:%%M:%%S").unwrap()`, t.Format("15:04:05"))
 	}
 }
 
@@ -190,5 +228,15 @@ func datetime(v any) string {
 		panic(fmt.Sprintf("invalid date (%v)", v))
 	} else {
 		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, datetime.Format("2006-01-02 15:04:05"))
+	}
+}
+
+func optionalDateTime(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid timesat (%v)", v))
+	} else {
+		return fmt.Sprintf(`Some(NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap())`, datetime.Format("2006-01-02 15:04:05"))
 	}
 }

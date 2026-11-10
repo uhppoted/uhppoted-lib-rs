@@ -43,6 +43,7 @@ type response struct {
 
 type value struct {
 	Name  string
+	Type  string
 	Value any
 }
 
@@ -218,78 +219,182 @@ func expected(f lib.Function, t lib.FuncTest) []response {
 	expected := []response{}
 
 	for _, reply := range t.Replies {
-		expected = append(expected, response{
-			Type:   codegen.TitleCase(fmt.Sprintf("%v", f.Response.Name)),
-			Values: values(reply),
-		})
+		expected = append(expected, record(f, reply))
 	}
 
 	return expected
 }
 
-func values(r lib.Reply) []value {
-	values := []value{}
+func record(f lib.Function, reply lib.Reply) response {
+	lookup := func(key string) any {
+		for _, v := range reply.Response {
+			if v.Name == key {
+				return v.Value
+			}
+		}
 
-	for _, v := range r.Response {
-		switch {
-		// 		case t.Name == "set-first-card" && a.Name == "active-mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+		panic(fmt.Sprintf("missing expected value '%v", key))
+	}
 
-		// 		case t.Name == "set-first-card" && a.Name == "inactive-mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+	if f.Name == "get status" {
+		// pub system_time: NaiveDateTime,
+		// pub system_error: u8,
+		// pub doors: Doors,
+		// pub alarms: Alarms,
+		// pub event: Event,
+		// pub special_info: u8,
 
-		case v.Type == "IPv4":
-			values = append(values, value{
-				Name: codegen.SnakeCase(v.Name),
-				// Type:  ": Ipv4Addr",
-				Value: ipv4(v.Value),
-			})
+		return response{
+			Type: "StatusRecord",
+			Values: []value{
+				{Name: "system_datetime", Value: datetime(lookup("system.datetime"))},
+				{Name: "system_error", Value: lookup("system.error")},
+				{Name: "system_special_info", Value: lookup("system.special-info")},
 
-		case v.Type == "datetime":
-			values = append(values, value{
-				Name: codegen.SnakeCase(v.Name),
-				// Type:  "",
-				Value: datetime(v.Value),
-			})
+				{
+					Name: "doors",
+					Type: "doors",
+					Value: struct {
+						Door1Open any
+						Door2Open any
+						Door3Open any
+						Door4Open any
 
-		// 		case a.Type == "date":
-		// 			args = append(args, arg{date(a.Value), comma})
+						Door1Button any
+						Door2Button any
+						Door3Button any
+						Door4Button any
 
-		// 		case a.Type == "HHmm":
-		// 			args = append(args, arg{HHmm(a.Value), comma})
+						Door1Unlocked any
+						Door2Unlocked any
+						Door3Unlocked any
+						Door4Unlocked any
+					}{
+						Door1Open: lookup("door-1.open"),
+						Door2Open: lookup("door-2.open"),
+						Door3Open: lookup("door-3.open"),
+						Door4Open: lookup("door-4.open"),
 
-		// 		case a.Type == "mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+						Door1Button: lookup("door-1.button"),
+						Door2Button: lookup("door-2.button"),
+						Door3Button: lookup("door-3.button"),
+						Door4Button: lookup("door-4.button"),
 
-		// 		case a.Type == "interlock":
-		// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
+						Door1Unlocked: lookup("door-1.unlocked"),
+						Door2Unlocked: lookup("door-2.unlocked"),
+						Door3Unlocked: lookup("door-3.unlocked"),
+						Door4Unlocked: lookup("door-4.unlocked"),
+					}},
 
-		// 		case a.Type == "task":
-		// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
+				{
+					Name: "alarms",
+					Type: "alarms",
+					Value: struct {
+						Flags      any
+						Fire       any
+						LockForced any
+					}{
+						Flags:      lookup("inputs"),
+						Fire:       lookup("alarms.fire"),
+						LockForced: lookup("alarms.lock-forced"),
+					},
+				},
 
-		// 		case a.Type == "anti-passback":
-		// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
-
-		// 		case a.Type == "address:port":
-		// 			{
-		// 				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
-		// 				address := fmt.Sprintf(`Network_Socket_Address (Addr => Inet_Addr ("%v"), Port => Port_Type (%v))`, addrPort.Addr(), addrPort.Port())
-
-		// 				args = append(args, arg{address, comma})
-		// 			}
-
-		// 		case a.Type == "bool":
-		// 			args = append(args, arg{codegen.Boolean(a.Value), comma})
-
-		default:
-			values = append(values, value{
-				Name:  codegen.SnakeCase(v.Name),
-				Value: fmt.Sprintf("%v", v.Value),
-			})
+				{
+					Name: "event",
+					Type: "event",
+					Value: struct {
+						Index         any
+						Type          any
+						AccessGranted any
+						Door          any
+						Direction     any
+						Card          any
+						Timestamp     any
+						Reason        any
+					}{
+						Index:         lookup("event.index"),
+						Type:          lookup("event.type"),
+						AccessGranted: lookup("event.access-granted"),
+						Door:          lookup("event.door"),
+						Direction:     lookup("event.direction"),
+						Card:          lookup("event.card"),
+						Timestamp:     optional_timestamp(lookup("event.timestamp")),
+						Reason:        lookup("event.reason"),
+					},
+				},
+			},
 		}
 	}
 
-	return values
+	values := []value{}
+	for _, v := range reply.Response {
+		values = append(values, val(v))
+	}
+
+	return response{
+		Type:   codegen.TitleCase(fmt.Sprintf("%v", f.Response.Name)),
+		Values: values,
+	}
+}
+
+func val(v lib.Value) value {
+	switch {
+	// 		case t.Name == "set-first-card" && a.Name == "active-mode":
+	// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+
+	// 		case t.Name == "set-first-card" && a.Name == "inactive-mode":
+	// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+
+	case v.Type == "IPv4":
+		return value{
+			Name: codegen.SnakeCase(v.Name),
+			// Type:  ": Ipv4Addr",
+			Value: ipv4(v.Value),
+		}
+
+	case v.Type == "datetime":
+		return value{
+			Name: codegen.SnakeCase(v.Name),
+			// Type:  "",
+			Value: datetime(v.Value),
+		}
+
+	// 		case a.Type == "date":
+	// 			args = append(args, arg{date(a.Value), comma})
+
+	// 		case a.Type == "HHmm":
+	// 			args = append(args, arg{HHmm(a.Value), comma})
+
+	// 		case a.Type == "mode":
+	// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+
+	// 		case a.Type == "interlock":
+	// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
+
+	// 		case a.Type == "task":
+	// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
+
+	// 		case a.Type == "anti-passback":
+	// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
+
+	// 		case a.Type == "address:port":
+	// 			{
+	// 				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
+	// 				address := fmt.Sprintf(`Network_Socket_Address (Addr => Inet_Addr ("%v"), Port => Port_Type (%v))`, addrPort.Addr(), addrPort.Port())
+
+	// 				args = append(args, arg{address, comma})
+	// 			}
+
+	// 		case a.Type == "bool":
+	// 			args = append(args, arg{codegen.Boolean(a.Value), comma})
+
+	default:
+		return value{
+			Name:  codegen.SnakeCase(v.Name),
+			Value: fmt.Sprintf("%v", v.Value),
+		}
+	}
 }
 
 func ipv4(v any) string {
@@ -306,6 +411,16 @@ func datetime(v any) string {
 		panic(fmt.Sprintf("invalid date (%v)", v))
 	} else {
 		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, datetime.Format("2006-01-02 15:04:05"))
+	}
+}
+
+func optional_timestamp(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
+		return "None"
+	} else {
+		return fmt.Sprintf(`Some(NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap())`, datetime.Format("2006-01-02 15:04:05"))
 	}
 }
 

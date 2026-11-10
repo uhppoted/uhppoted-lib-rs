@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use regex::Regex;
 use std::net::Ipv4Addr;
 
@@ -156,6 +156,69 @@ impl codec::Decode for SetListenerResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GetStatusResponse {
+    pub controller: u32,
+    pub system_date: NaiveDate,
+    pub system_time: NaiveTime,
+    pub door_1_open: bool,
+    pub door_2_open: bool,
+    pub door_3_open: bool,
+    pub door_4_open: bool,
+    pub door_1_button: bool,
+    pub door_2_button: bool,
+    pub door_3_button: bool,
+    pub door_4_button: bool,
+    pub relays: u8,
+    pub inputs: u8,
+    pub system_error: u8,
+    pub special_info: u8,
+    pub event_index: u32,
+    pub event_type: u8,
+    pub event_access_granted: bool,
+    pub event_door: u8,
+    pub event_direction: u8,
+    pub event_card: u32,
+    pub event_timestamp: Option<NaiveDateTime>,
+    pub event_reason: u8,
+    pub sequence_no: u32,
+}
+
+impl codec::Decode for GetStatusResponse {
+    fn decode(packet: &Msg) -> Result<GetStatusResponse> {
+        validate!(packet, 0x20);
+
+        let response = GetStatusResponse {
+            controller: unpack_uint32(packet, 4)?,
+            system_date: unpack_shortdate(packet, 51)?,
+            system_time: unpack_time(packet, 37)?,
+            door_1_open: unpack_bool(packet, 28)?,
+            door_2_open: unpack_bool(packet, 29)?,
+            door_3_open: unpack_bool(packet, 30)?,
+            door_4_open: unpack_bool(packet, 31)?,
+            door_1_button: unpack_bool(packet, 32)?,
+            door_2_button: unpack_bool(packet, 33)?,
+            door_3_button: unpack_bool(packet, 34)?,
+            door_4_button: unpack_bool(packet, 35)?,
+            relays: unpack_uint8(packet, 49)?,
+            inputs: unpack_uint8(packet, 50)?,
+            system_error: unpack_uint8(packet, 36)?,
+            special_info: unpack_uint8(packet, 48)?,
+            event_index: unpack_uint32(packet, 8)?,
+            event_type: unpack_uint8(packet, 12)?,
+            event_access_granted: unpack_bool(packet, 13)?,
+            event_door: unpack_uint8(packet, 14)?,
+            event_direction: unpack_uint8(packet, 15)?,
+            event_card: unpack_uint32(packet, 16)?,
+            event_timestamp: unpack_optional_datetime(packet, 20)?,
+            event_reason: unpack_uint8(packet, 27)?,
+            sequence_no: unpack_uint32(packet, 40)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -179,6 +242,10 @@ pub fn get_listener_response(packet: &Msg) -> Result<GetListenerResponse> {
 
 pub fn set_listener_response(packet: &Msg) -> Result<SetListenerResponse> {
     SetListenerResponse::decode(packet)
+}
+
+pub fn get_status_response(packet: &Msg) -> Result<GetStatusResponse> {
+    GetStatusResponse::decode(packet)
 }
 
 #[macro_export]
@@ -262,6 +329,26 @@ fn unpack_date(packet: &Msg, offset: usize) -> Result<NaiveDate> {
     }
 }
 
+fn unpack_shortdate(packet: &Msg, offset: usize) -> Result<NaiveDate> {
+    let slice: &[u8; 3] = packet[offset..offset + 3].try_into().unwrap();
+    let s = format!("20{}", bcd2string!(slice));
+
+    match NaiveDate::parse_from_str(&s, "%Y%m%d") {
+        Ok(date) => Ok(date),
+        Err(_) => Err(Error::from(format!("invalid date string {}", s))),
+    }
+}
+
+fn unpack_time(packet: &Msg, offset: usize) -> Result<NaiveTime> {
+    let slice: &[u8; 3] = packet[offset..offset + 3].try_into().unwrap();
+    let s: String = bcd2string!(slice);
+
+    match NaiveTime::parse_from_str(&s, "%H%M%S") {
+        Ok(time) => Ok(time),
+        Err(_) => Err(Error::from(format!("invalid time string {}", s))),
+    }
+}
+
 fn unpack_datetime(packet: &Msg, offset: usize) -> Result<NaiveDateTime> {
     let slice: &[u8; 7] = packet[offset..offset + 7].try_into().unwrap();
     let s: String = bcd2string!(slice);
@@ -269,6 +356,16 @@ fn unpack_datetime(packet: &Msg, offset: usize) -> Result<NaiveDateTime> {
     match NaiveDateTime::parse_from_str(&s, "%Y%m%d%H%M%S") {
         Ok(datetime) => Ok(datetime),
         Err(_) => Err(Error::from(format!("invalid date/time string {}", s))),
+    }
+}
+
+fn unpack_optional_datetime(packet: &Msg, offset: usize) -> Result<Option<NaiveDateTime>> {
+    let slice: &[u8; 7] = packet[offset..offset + 7].try_into().unwrap();
+    let s: String = bcd2string!(slice);
+
+    match NaiveDateTime::parse_from_str(&s, "%Y%m%d%H%M%S") {
+        Ok(datetime) => Ok(Some(datetime)),
+        Err(_) => Ok(None),
     }
 }
 

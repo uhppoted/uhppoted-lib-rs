@@ -13,7 +13,7 @@ var Responses = []types.Response{
 	lib.SetTimeResponse,
 	lib.GetListenerResponse,
 	lib.SetListenerResponse,
-	// lib.GetStatusResponse,
+	lib.GetStatusResponse,
 	// lib.GetListenerAddrPortResponse,
 	// lib.SetListenerAddrPortResponse,
 	// lib.GetDoorResponse,

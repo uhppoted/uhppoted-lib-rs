@@ -22,6 +22,10 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [ ] --debug: set log level
     - (?) only log if debug
 
+- [ ] event types enum
+- [ ] event reasons enum
+- [ ] event directions enum
+
 - [x] find-controllers
 - [x] get-controller
 - [x] set-IPv4
@@ -29,10 +33,10 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] set-time
 - [x] get-listener
 - [x] set-listener
+- [x] get-status
 - [ ] get-door
 - [ ] set-door
 - [ ] open-door
-- [ ] get-status
 - [ ] get-cards
 - [ ] get-card
 - [ ] get-cardatindex

@@ -119,3 +119,44 @@ fn set_listener() {
 
     assert_eq!(response, expected);
 }
+
+#[test]
+fn get_status() {
+    let packet: Msg = [
+        0x17, 0x20, 0x00, 0x00, 0x78, 0x37, 0x2a, 0x18, 0x4e, 0x00, 0x00, 0x00, 0x02, 0x01, 0x03, 0x01, 0xa1, 0x98,
+        0x7c, 0x00, 0x20, 0x22, 0x08, 0x23, 0x09, 0x47, 0x06, 0x2c, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        0x03, 0x09, 0x49, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x27, 0x07, 0x09, 0x22, 0x08, 0x23,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    ];
+
+    let expected = GetStatusResponse {
+        controller: 405419896,
+        system_date: NaiveDate::parse_from_str("22-08-23", "%y-%m-%d").unwrap(),
+        system_time: NaiveTime::parse_from_str("09:49:39", "%H:%M:%S").unwrap(),
+        door_1_open: false,
+        door_2_open: true,
+        door_3_open: false,
+        door_4_open: false,
+        door_1_button: false,
+        door_2_button: false,
+        door_3_button: false,
+        door_4_button: true,
+        relays: 7,
+        inputs: 9,
+        system_error: 3,
+        special_info: 39,
+        event_index: 78,
+        event_type: 2,
+        event_access_granted: true,
+        event_door: 3,
+        event_direction: 1,
+        event_card: 8165537,
+        event_timestamp: Some(NaiveDateTime::parse_from_str("2022-08-23 09:47:06", "%Y-%m-%d %H:%M:%S").unwrap()),
+        event_reason: 44,
+        sequence_no: 0,
+    };
+
+    let response = get_status_response(&packet).unwrap();
+
+    assert_eq!(response, expected);
+}

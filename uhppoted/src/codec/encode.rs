@@ -122,6 +122,17 @@ pub fn set_listener_request(controller: u32, address: Ipv4Addr, port: u16, inter
     Ok(packet)
 }
 
+pub fn get_status_request(controller: u32) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x20;
+
+    pack_uint32(controller, &mut packet, 4)?;
+
+    Ok(packet)
+}
+
 fn pack_uint8(v: u8, packet: &mut Msg, offset: usize) -> Result<()> {
     packet[offset] = v;
     Ok(())

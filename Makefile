@@ -85,3 +85,5 @@ set-listener: build
 	$(CLI) set-listener --controller $(CONTROLLER) --address $(LISTENER)
 	$(CLI) set-listener --controller $(CONTROLLER) --address $(LISTENER) --interval 30
 
+get-status: build
+	$(CLI) get-status --controller $(CONTROLLER)

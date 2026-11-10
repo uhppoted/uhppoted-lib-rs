@@ -1,9 +1,15 @@
 use chrono::NaiveDateTime;
+use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
 use uhppoted::ControllerRecord;
 use uhppoted::ListenerRecord;
+use uhppoted::StatusRecord;
+
+use uhppoted::Alarms;
+use uhppoted::Doors;
+use uhppoted::Event;
 
 #[path = "stub.rs"]
 mod stub;
@@ -143,6 +149,48 @@ fn test_set_listener() {
     let interval: Option<u8> = Some(17);
 
     let result = uhppoted::set_listener(&stub.cfg, controller, address, interval, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn get_status() {
+    let stub = stub::start();
+
+    let expected = StatusRecord {
+        system_datetime: NaiveDateTime::parse_from_str("2022-08-23 09:49:39", "%Y-%m-%d %H:%M:%S").unwrap(),
+        system_error: 3,
+        system_special_info: 39,
+
+        doors: Doors {
+            open: HashMap::from([(1, false), (2, true), (3, false), (4, false)]),
+
+            button: HashMap::from([(1, false), (2, false), (3, false), (4, true)]),
+
+            unlocked: HashMap::from([(1, true), (2, true), (3, true), (4, false)]),
+        },
+
+        alarms: Alarms {
+            flags: 0x09,
+            fire: true,
+            lock_forced: false,
+        },
+
+        event: Some(Event {
+            index: 78,
+            event_type: 2,
+            access_granted: true,
+            door: 3,
+            direction: 1,
+            card: 8165537,
+            timestamp: Some(NaiveDateTime::parse_from_str("2022-08-23 09:47:06", "%Y-%m-%d %H:%M:%S").unwrap()),
+            reason: 44,
+        }),
+    };
+
+    let controller = 405419896;
+
+    let result = uhppoted::get_status(&stub.cfg, controller, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
 }

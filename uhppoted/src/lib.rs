@@ -1,4 +1,5 @@
 use chrono::NaiveDateTime;
+use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
@@ -35,6 +36,11 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 
 pub type ControllerRecord = structs::ControllerRecord;
 pub type ListenerRecord = structs::ListenerRecord;
+pub type StatusRecord = structs::StatusRecord;
+
+pub type Doors = structs::Doors;
+pub type Alarms = structs::Alarms;
+pub type Event = structs::Event;
 
 pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<ControllerRecord>> {
     let request = encode::get_controller_request(0)?;
@@ -242,4 +248,76 @@ pub fn set_listener<T: controller::ControllerRef>(
     }
 
     Ok(response.ok)
+}
+
+pub fn get_status<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    timeout: Duration,
+) -> Result<StatusRecord> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::get_status_request(id)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::get_status_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(StatusRecord {
+        system_datetime: NaiveDateTime::new(response.system_date, response.system_time),
+        system_error: response.system_error,
+        system_special_info: response.special_info,
+
+        doors: Doors {
+            open: HashMap::from([
+                (1, response.door_1_open),
+                (2, response.door_2_open),
+                (3, response.door_3_open),
+                (4, response.door_4_open),
+            ]),
+
+            button: HashMap::from([
+                (1, response.door_1_button),
+                (2, response.door_2_button),
+                (3, response.door_3_button),
+                (4, response.door_4_button),
+            ]),
+
+            unlocked: HashMap::from([
+                (1, (response.relays & 0x01) == 0x01),
+                (2, (response.relays & 0x02) == 0x02),
+                (3, (response.relays & 0x04) == 0x04),
+                (4, (response.relays & 0x08) == 0x08),
+            ]),
+        },
+
+        alarms: Alarms {
+            flags: response.inputs,
+            fire: (response.inputs & 0x01) == 0x01,
+            lock_forced: (response.inputs & 0x02) == 0x02,
+        },
+
+        event: Some(Event {
+            index: response.event_index,
+            event_type: response.event_type,
+            access_granted: response.event_access_granted,
+            door: response.event_door,
+            direction: response.event_direction,
+            card: response.event_card,
+            timestamp: response.event_timestamp,
+            reason: response.event_reason,
+        }),
+    })
 }

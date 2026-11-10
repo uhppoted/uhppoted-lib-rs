@@ -31,5 +31,48 @@ fn {{ .Name }}() {
 {{- define "params"}}&stub.cfg{{ range $param := . }}, {{ .Name }}{{ end }}, TIMEOUT{{end}}
 
 {{- define "response"}}{{ .Type }} { {{ range $value := .Values }}
-        {{ .Name }}: {{ .Value }},{{ end }}
+        {{ if eq .Type "doors"}}{{- .Name }}: {{template "doors" .Value }}
+        {{- else if eq .Type "alarms"}}{{- .Name }}: {{template "alarms" .Value }}
+        {{- else if eq .Type "event"}}{{- .Name }}: {{template "event" .Value }}
+        {{- else}}{{- .Name }}: {{ .Value }},{{ end }}{{ end }}
     }{{ end }}
+
+{{- define "doors"}}Doors {
+            open: HashMap::from([
+                (1, {{ .Door1Open }}),
+                (2, {{ .Door2Open }}),
+                (3, {{ .Door3Open }}),
+                (4, {{ .Door4Open }}),
+            ]),
+
+            button: HashMap::from([
+                (1, {{ .Door1Button }}),
+                (2, {{ .Door2Button }}),
+                (3, {{ .Door3Button }}),
+                (4, {{ .Door4Button }}),
+            ]),
+
+            unlocked: HashMap::from([
+                (1, {{ .Door1Unlocked }}),
+                (2, {{ .Door2Unlocked }}),
+                (3, {{ .Door3Unlocked }}),
+                (4, {{ .Door4Unlocked }}),
+            ]),
+        },{{ end }}
+
+{{- define "alarms"}}Alarms {
+            flags: {{ .Flags }},
+            fire: {{ .Fire }},
+            lock_forced: {{ .LockForced  }},
+        },{{ end }}
+
+{{- define "event"}}Some(Event {
+            index: {{ .Index }},
+            event_type: {{ .Type }},
+            access_granted: {{ .AccessGranted }},
+            door: {{ .Door }},
+            direction: {{ .Direction }},
+            card: {{ .Card }},
+            timestamp: {{ .Timestamp }},
+            reason: {{ .Reason }},
+        }),{{ end }}

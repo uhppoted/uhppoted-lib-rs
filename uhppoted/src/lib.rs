@@ -6,6 +6,9 @@ use std::time::Duration;
 #[path = "error.rs"]
 pub mod error;
 
+#[path = "codec/codec.rs"]
+pub(crate) mod codec;
+
 #[path = "codec/encode.rs"]
 pub(crate) mod encode;
 
@@ -37,6 +40,7 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 pub type ControllerRecord = structs::ControllerRecord;
 pub type ListenerRecord = structs::ListenerRecord;
 pub type StatusRecord = structs::StatusRecord;
+pub type DoorRecord = structs::DoorRecord;
 
 pub type Doors = structs::Doors;
 pub type Alarms = structs::Alarms;
@@ -248,6 +252,39 @@ pub fn set_listener<T: controller::ControllerRef>(
     }
 
     Ok(response.ok)
+}
+
+pub fn get_door<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    door: u8,
+    timeout: Duration,
+) -> Result<DoorRecord> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::get_door_request(id, door)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::get_door_response(&reply)?;
+
+    if response.controller != id || response.door != door {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(DoorRecord {
+        door: response.door,
+        mode: response.mode,
+        delay: response.delay,
+    })
 }
 
 pub fn get_status<T: controller::ControllerRef>(

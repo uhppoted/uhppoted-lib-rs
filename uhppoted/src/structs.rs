@@ -55,3 +55,10 @@ pub struct Event {
     pub timestamp: Option<NaiveDateTime>,
     pub reason: u8,
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DoorRecord {
+    pub door: u8,
+    pub mode: u8,
+    pub delay: u8,
+}

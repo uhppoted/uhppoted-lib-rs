@@ -25,6 +25,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [ ] event types enum
 - [ ] event reasons enum
 - [ ] event directions enum
+- [ ] door mode enum
 
 - [x] find-controllers
 - [x] get-controller
@@ -33,13 +34,13 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] set-time
 - [x] get-listener
 - [x] set-listener
-- [x] get-status
-- [ ] get-door
+- [x] get-door
 - [ ] set-door
+- [x] get-status
 - [ ] open-door
 - [ ] get-cards
 - [ ] get-card
-- [ ] get-cardatindex
+- [ ] get-card-at-index
 - [ ] put-card
 - [ ] delete-card
 - [ ] delete-all-cards

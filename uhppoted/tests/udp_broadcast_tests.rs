@@ -4,6 +4,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
 use uhppoted::ControllerRecord;
+use uhppoted::DoorRecord;
 use uhppoted::ListenerRecord;
 use uhppoted::StatusRecord;
 
@@ -149,6 +150,24 @@ fn test_set_listener() {
     let interval: Option<u8> = Some(17);
 
     let result = uhppoted::set_listener(&stub.cfg, controller, address, interval, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_get_door() {
+    let stub = stub::start();
+
+    let expected = DoorRecord {
+        door: 4,
+        mode: 3,
+        delay: 7,
+    };
+
+    let controller: u32 = 405419896;
+    let door: u8 = 4;
+
+    let result = uhppoted::get_door(&stub.cfg, controller, door, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
 }

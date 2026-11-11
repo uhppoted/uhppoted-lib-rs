@@ -11,6 +11,7 @@ ADDRESS ?= 192.168.1.125
 NETMASK ?= 255.255.255.0
 GATEWAY ?= 192.168.1.1
 LISTENER ?= 192.168.1.125:60001
+DOOR ?= 3
 
 clean:
 	cargo clean
@@ -84,6 +85,9 @@ get-listener: build
 set-listener: build
 	$(CLI) set-listener --controller $(CONTROLLER) --address $(LISTENER)
 	$(CLI) set-listener --controller $(CONTROLLER) --address $(LISTENER) --interval 30
+
+get-door: build
+	$(CLI) get-door --controller $(CONTROLLER) --door $(DOOR)
 
 get-status: build
 	$(CLI) get-status --controller $(CONTROLLER)

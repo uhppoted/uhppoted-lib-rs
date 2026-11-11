@@ -41,11 +41,12 @@ pub fn send_to(_cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Durati
             break sock;
         }
 
+        sockets.push(sock);
+
         // if cfg.bind.port() != 0 {
         //     return Err(ErrorKind::BindToReservedPort.into());
         // }
 
-        sockets.push(sock);
         if sockets.len() >= 5 {
             return Err(ErrorKind::BoundToReservedPort.into());
         }

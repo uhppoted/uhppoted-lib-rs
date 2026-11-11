@@ -53,7 +53,10 @@ publish: release
 	@echo "Nothing to do
 
 debug: generate
-	cargo test --lib
+	$(CLI) get-controller --controller $(CONTROLLER)
+	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST)
+	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --udp
+	$(CLI) get-controller --controller $(CONTROLLER) --dest $(DEST) --tcp
 
 usage: build
 	$(CLI)

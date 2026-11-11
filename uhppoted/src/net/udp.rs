@@ -1,6 +1,5 @@
 use std::io::ErrorKind::{Interrupted, TimedOut, WouldBlock};
 use std::net::{SocketAddrV4, UdpSocket};
-use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use super::Config;
@@ -28,28 +27,25 @@ pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<M
     //
     // It should really match on both address and port but multiple network cards, etc make it complicated
     // and fragile.
-    let mut sockets = Vec::<Rc<UdpSocket>>::new();
-    let mut socket: Rc<UdpSocket>;
-    let mut retries = 1;
+    let mut sockets = Vec::<UdpSocket>::new();
 
-    loop {
-        socket = Rc::new(UdpSocket::bind(cfg.bind)?);
-        sockets.push(Rc::clone(&socket));
+    let socket = loop {
+        let sock = UdpSocket::bind(cfg.bind)?;
 
-        if socket.local_addr()?.port() != cfg.broadcast.port() {
-            break;
+        if sock.local_addr()?.port() != cfg.broadcast.port() {
+            break sock;
         }
+
+        sockets.push(sock);
 
         if cfg.bind.port() != 0 {
             return Err(ErrorKind::BindToReservedPort.into());
         }
 
-        if retries >= 5 {
+        if sockets.len() >= 5 {
             return Err(ErrorKind::BoundToReservedPort.into());
         }
-
-        retries += 1;
-    }
+    };
 
     socket.set_write_timeout(Some(WRITE_TIMEOUT))?;
     socket.set_broadcast(true)?;
@@ -108,28 +104,25 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
     //
     // It should really match on both address and port but multiple network cards, etc make it complicated
     // and fragile.
-    let mut sockets = Vec::<Rc<UdpSocket>>::new();
-    let mut socket: Rc<UdpSocket>;
-    let mut retries = 1;
+    let mut sockets = Vec::<UdpSocket>::new();
 
-    loop {
-        socket = Rc::new(UdpSocket::bind(cfg.bind)?);
-        sockets.push(Rc::clone(&socket));
+    let socket = loop {
+        let sock = UdpSocket::bind(cfg.bind)?;
 
-        if socket.local_addr()?.port() != cfg.broadcast.port() {
-            break;
+        if sock.local_addr()?.port() != cfg.broadcast.port() {
+            break sock;
         }
+
+        sockets.push(sock);
 
         if cfg.bind.port() != 0 {
             return Err(ErrorKind::BindToReservedPort.into());
         }
 
-        if retries >= 5 {
+        if sockets.len() >= 5 {
             return Err(ErrorKind::BoundToReservedPort.into());
         }
-
-        retries += 1;
-    }
+    };
 
     socket.set_write_timeout(Some(WRITE_TIMEOUT))?;
     socket.set_broadcast(true)?;
@@ -196,28 +189,25 @@ pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duratio
     //
     // It should really match on both address and port but multiple network cards, etc make it complicated
     // and fragile.
-    let mut sockets = Vec::<Rc<UdpSocket>>::new();
-    let mut socket: Rc<UdpSocket>;
-    let mut retries = 1;
+    let mut sockets = Vec::<UdpSocket>::new();
 
-    loop {
-        socket = Rc::new(UdpSocket::bind(cfg.bind)?);
-        sockets.push(Rc::clone(&socket));
+    let socket = loop {
+        let sock = UdpSocket::bind(cfg.bind)?;
 
-        if socket.local_addr()?.port() != dest.port() {
-            break;
+        if sock.local_addr()?.port() != dest.port() {
+            break sock;
         }
+
+        sockets.push(sock);
 
         if cfg.bind.port() != 0 {
             return Err(ErrorKind::BindToReservedPort.into());
         }
 
-        if retries >= 5 {
+        if sockets.len() >= 5 {
             return Err(ErrorKind::BoundToReservedPort.into());
         }
-
-        retries += 1;
-    }
+    };
 
     socket.set_write_timeout(Some(WRITE_TIMEOUT))?;
     socket.connect(dest)?;

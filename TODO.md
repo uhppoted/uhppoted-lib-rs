@@ -10,11 +10,11 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] config builder
 - [x] codegen - just use Go
 - [x] copy _remaining_ lambda to udp.rs
-- [ ] copy _loop_ from _tcp.rs_
+- [x] copy _loop_ from _tcp.rs_
+- [x] CHANGELOG
 - [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
 - [ ] README API summary
 - [ ] API.md
-- [ ] CHANGELOG
 - [ ] docstrings
 
 - [ ] CLI

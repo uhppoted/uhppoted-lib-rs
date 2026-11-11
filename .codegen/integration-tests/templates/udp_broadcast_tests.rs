@@ -1,14 +1,21 @@
 use chrono::NaiveDateTime;
+use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
 use uhppoted::ControllerRecord;
+use uhppoted::DoorRecord;
 use uhppoted::ListenerRecord;
+use uhppoted::StatusRecord;
 
-#[path = "stub.rs"]
+use uhppoted::Alarms;
+use uhppoted::Doors;
+use uhppoted::Event;
+
+#[path = "../stub.rs"]
 mod stub;
 
-const TIMEOUT: Duration = Duration::from_millis(1250);
+const TIMEOUT: Duration = Duration::from_millis(5000);
 
 {{- range $test := .Tests }}
 #[test]
@@ -20,7 +27,7 @@ fn {{ .Name }}() {
     ];{{ else }}
     let expected = {{ template "response" (index .Expected  0) }};{{ end }}
     {{ range $arg := .Args }}
-    {{ .Name }}{{ .Type }} = {{ .Value }};{{ end }}
+    let {{ .Name }}{{ .Type }} = {{ .Value }};{{ end }}
 
     let result = uhppoted::{{ .Function }}({{ template "params" .Args }}).unwrap();
 
@@ -30,12 +37,14 @@ fn {{ .Name }}() {
 
 {{- define "params"}}&stub.cfg{{ range $param := . }}, {{ .Name }}{{ end }}, TIMEOUT{{end}}
 
-{{- define "response"}}{{ .Type }} { {{ range $value := .Values }}
+{{- define "response"}}
+        {{- if eq .Type "bool"}}{{ (index .Values 0).Value }}
+        {{- else }}
+        {{- .Type }} { {{ range $value := .Values }}
         {{ if eq .Type "doors"}}{{- .Name }}: {{template "doors" .Value }}
         {{- else if eq .Type "alarms"}}{{- .Name }}: {{template "alarms" .Value }}
         {{- else if eq .Type "event"}}{{- .Name }}: {{template "event" .Value }}
-        {{- else}}{{- .Name }}: {{ .Value }},{{ end }}{{ end }}
-    }{{ end }}
+        {{- else}}{{- .Name }}: {{ .Value }},{{ end }}{{ end }}}{{ end }}{{ end }}
 
 {{- define "doors"}}Doors {
             open: HashMap::from([

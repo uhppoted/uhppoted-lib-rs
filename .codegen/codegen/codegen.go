@@ -23,86 +23,27 @@ type KV struct {
 	Value string
 }
 
-func RustName(s string) string {
-	tokens := regexp.MustCompile(`[ \-:]+`).Split(s, -1)
-
-	// if s == "set listener addr:port" || s == "set-listener-addr-port" {
-	// 	return "Set_Listener"
-	// }
-
-	// // 'delay' is a reserved word in Ada
-	// if s == "delay" {
-	// 	return "Open_Delay"
-	// }
-
-	// for i, token := range tokens {
-	// 	tokens[i] = capitalize(token)
-	// }
-
-	return strings.Join(tokens, "_")
-}
-
-// func AdaValue(t string, v any) string {
-// 	s := fmt.Sprintf("%v", v)
-
-// 	switch {
-// 	case t == "IPv4":
-// 		return IPv4(v)
-
-// 	case t == "MAC":
-// 		return mac(v)
-
-// 	case t == "version":
-// 		return fmt.Sprintf(`To_Unbounded_String ("%v")`, v)
-
-// 	case t == "date" || t == "shortdate" || t == "optional date":
-// 		return DateOnly(v)
-
-// 	case t == "time":
-// 		return _time(v)
-
-// 	case t == "datetime" || t == "optional datetime":
-// 		return datetime(v)
-
-// 	case t == "HHmm":
-// 		return HHmm(v)
-
-// 	case t == "bool" && v == true:
-// 		return "True"
-
-// 	case t == "bool" && v == false:
-// 		return "False"
-
-// 	case t == "Boolean" && v == true:
-// 		return "True"
-
-// 	case t == "Boolean" && v == false:
-// 		return "False"
-
-// 	case t == "address:port":
-// 		{
-// 			address := netip.MustParseAddrPort(fmt.Sprintf("%v", v))
-
-// 			return fmt.Sprintf(`Network_Socket_Address (Addr => Inet_Addr ("%v"), Port => Port_Type (%v))`, address.Addr(), address.Port())
-// 		}
-
-// 	default:
-// 		return s
-// 	}
-// }
-
-// func KebabCase(s string) string {
-// 	tokens := regexp.MustCompile(`\s+`).Split(s, -1)
-
-// 	for i, token := range tokens[1:] {
-// 		tokens[i+1] = strings.ToLower(token)
-// 	}
-
-// 	return strings.Join(tokens, "-")
+// func RustName(s string) string {
+// 	tokens := regexp.MustCompile(`[ \-:]+`).Split(s, -1)
+//
+// 	// if s == "set listener addr:port" || s == "set-listener-addr-port" {
+// 	// 	return "Set_Listener"
+// 	// }
+//
+// 	// // 'delay' is a reserved word in Ada
+// 	// if s == "delay" {
+// 	// 	return "Open_Delay"
+// 	// }
+//
+// 	// for i, token := range tokens {
+// 	// 	tokens[i] = capitalize(token)
+// 	// }
+//
+// 	return strings.Join(tokens, "_")
 // }
 
 func SnakeCase(s string) string {
-	tokens := regexp.MustCompile(`\s+|[-.]+`).Split(s, -1)
+	tokens := regexp.MustCompile(`\s+|[-.:]+`).Split(s, -1)
 
 	for i, token := range tokens[1:] {
 		tokens[i+1] = strings.ToLower(token)

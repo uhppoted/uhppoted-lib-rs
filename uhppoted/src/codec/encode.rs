@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 use super::Msg;
 use super::Result;
@@ -108,15 +108,15 @@ pub fn get_listener_request(controller: u32) -> Result<Msg> {
     Ok(packet)
 }
 
-pub fn set_listener_request(controller: u32, address: Ipv4Addr, port: u16, interval: u8) -> Result<Msg> {
+pub fn set_listener_request(controller: u32, address: SocketAddrV4, interval: u8) -> Result<Msg> {
     let mut packet = [0x00; 64];
 
     packet[0] = 0x17;
     packet[1] = 0x90;
 
     pack_uint32(controller, &mut packet, 4)?;
-    pack_IPv4(address, &mut packet, 8)?;
-    pack_uint16(port, &mut packet, 12)?;
+    pack_IPv4(*address.ip(), &mut packet, 8)?;
+    pack_uint16(address.port(), &mut packet, 12)?;
     pack_uint8(interval, &mut packet, 14)?;
 
     Ok(packet)

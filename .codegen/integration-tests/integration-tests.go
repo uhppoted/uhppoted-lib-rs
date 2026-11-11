@@ -118,15 +118,19 @@ func transmogrify(functions []lib.Function) []test {
 
 	for _, f := range functions {
 		for _, t := range f.Tests {
-			name := codegen.RustName(t.Name)
-			replies := [][]string{}
+			name := codegen.SnakeCase(t.Name)
 
+			if t.Name == "set-listener-addr-port" {
+				name = "set_listener"
+			}
+
+			replies := [][]string{}
 			for _, reply := range t.Replies {
 				replies = append(replies, packet(reply.Message))
 			}
 
 			transmogrified = append(transmogrified, test{
-				Name:     fmt.Sprintf("%v", name),
+				Name:     name,
 				Function: codegen.SnakeCase(f.Name),
 				Args:     args(t),
 				Request:  packet(t.Request),
@@ -168,6 +172,18 @@ func args(t lib.FuncTest) []arg {
 				Value: ipv4(a.Value),
 			})
 
+		case a.Type == "address:port":
+			{
+				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
+				address := fmt.Sprintf(`"%v".parse().unwrap()`, addrPort)
+
+				args = append(args, arg{
+					Name:  codegen.SnakeCase(a.Name),
+					Type:  ": SocketAddrV4",
+					Value: address,
+				})
+			}
+
 		case a.Type == "datetime":
 			args = append(args, arg{
 				Name:  codegen.SnakeCase(a.Name),
@@ -192,14 +208,6 @@ func args(t lib.FuncTest) []arg {
 
 		// 		case a.Type == "anti-passback":
 		// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
-
-		// 		case a.Type == "address:port":
-		// 			{
-		// 				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
-		// 				address := fmt.Sprintf(`Network_Socket_Address (Addr => Inet_Addr ("%v"), Port => Port_Type (%v))`, addrPort.Addr(), addrPort.Port())
-
-		// 				args = append(args, arg{address, comma})
-		// 			}
 
 		// 		case a.Type == "bool":
 		// 			args = append(args, arg{codegen.Boolean(a.Value), comma})
@@ -234,6 +242,13 @@ func record(f lib.Function, reply lib.Reply) response {
 		}
 
 		panic(fmt.Sprintf("missing expected value '%v", key))
+	}
+
+	if f.Name == "set listener addr:port" {
+		return response{
+			Type:   "bool",
+			Values: []value{{Name: "", Value: lookup("ok")}},
+		}
 	}
 
 	if f.Name == "get status" {
@@ -348,15 +363,19 @@ func val(v lib.Value) value {
 
 	case v.Type == "IPv4":
 		return value{
-			Name: codegen.SnakeCase(v.Name),
-			// Type:  ": Ipv4Addr",
+			Name:  codegen.SnakeCase(v.Name),
 			Value: ipv4(v.Value),
+		}
+
+	case v.Type == "MAC":
+		return value{
+			Name:  codegen.SnakeCase(v.Name),
+			Value: fmt.Sprintf(`"%v"`, v.Value),
 		}
 
 	case v.Type == "datetime":
 		return value{
-			Name: codegen.SnakeCase(v.Name),
-			// Type:  "",
+			Name:  codegen.SnakeCase(v.Name),
 			Value: datetime(v.Value),
 		}
 

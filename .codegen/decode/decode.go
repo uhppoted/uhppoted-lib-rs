@@ -75,7 +75,7 @@ func transmogrify(responses []lib.Response) []test {
 
 	for _, response := range responses {
 		for _, t := range response.Tests {
-			name := codegen.RustName(t.Name)
+			name := codegen.SnakeCase(t.Name)
 			function := codegen.SnakeCase(response.Name)
 			record := codegen.TitleCase(response.Name)
 			annotations := []string{

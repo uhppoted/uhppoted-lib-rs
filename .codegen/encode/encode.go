@@ -74,7 +74,7 @@ func transmogrify(requests []lib.Request) []test {
 
 	for _, rq := range requests {
 		for _, t := range rq.Tests {
-			name := codegen.RustName(t.Name)
+			name := codegen.SnakeCase(t.Name)
 			function := codegen.SnakeCase(rq.Name)
 			annotations := []string{
 				"test",
@@ -83,6 +83,10 @@ func transmogrify(requests []lib.Request) []test {
 			if t.Name == "set-IPv4" {
 				function = "set_IPv4_request"
 				annotations = append(annotations, "allow(non_snake_case)")
+			}
+
+			if t.Name == "set-listener-addrport" {
+				function = "set_listener_request"
 			}
 
 			transmogrified = append(transmogrified, test{
@@ -142,31 +146,35 @@ func args(t lib.RequestTest) []arg {
 				Comma: comma,
 			})
 
-		// 		case a.Type == "date":
-		// 			args = append(args, arg{date(a.Value), comma})
+			// 		case a.Type == "date":
+			// 			args = append(args, arg{date(a.Value), comma})
 
-		// 		case a.Type == "HHmm":
-		// 			args = append(args, arg{HHmm(a.Value), comma})
+			// 		case a.Type == "HHmm":
+			// 			args = append(args, arg{HHmm(a.Value), comma})
 
-		// 		case a.Type == "mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+			// 		case a.Type == "mode":
+			// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
 
-		// 		case a.Type == "interlock":
-		// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
+			// 		case a.Type == "interlock":
+			// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
 
-		// 		case a.Type == "task":
-		// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
+			// 		case a.Type == "task":
+			// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
 
-		// 		case a.Type == "anti-passback":
-		// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
+			// 		case a.Type == "anti-passback":
+			// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
 
-		// 		case a.Type == "address:port":
-		// 			{
-		// 				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
-		// 				address := fmt.Sprintf(`Network_Socket_Address (Addr => Inet_Addr ("%v"), Port => Port_Type (%v))`, addrPort.Addr(), addrPort.Port())
+		case a.Type == "address:port":
+			{
+				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
+				address := fmt.Sprintf(`"%v".parse().unwrap()`, addrPort)
 
-		// 				args = append(args, arg{address, comma})
-		// 			}
+				args = append(args, arg{
+					Name:  codegen.SnakeCase(a.Name),
+					Type:  ": SocketAddrV4",
+					Value: address,
+					Comma: comma})
+			}
 
 		// 		case a.Type == "bool":
 		// 			args = append(args, arg{codegen.Boolean(a.Value), comma})

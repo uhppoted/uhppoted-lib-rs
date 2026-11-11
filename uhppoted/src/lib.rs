@@ -6,9 +6,6 @@ use std::time::Duration;
 #[path = "error.rs"]
 pub mod error;
 
-#[path = "codec/codec.rs"]
-pub(crate) mod codec;
-
 #[path = "codec/encode.rs"]
 pub(crate) mod encode;
 
@@ -233,8 +230,8 @@ pub fn set_listener<T: controller::ControllerRef>(
     let transport = controller.transport();
 
     let request = match interval {
-        Some(v) => encode::set_listener_request(id, *address.ip(), address.port(), v)?,
-        _ => encode::set_listener_request(id, *address.ip(), address.port(), 0)?,
+        Some(v) => encode::set_listener_request(id, address, v)?,
+        _ => encode::set_listener_request(id, address, 0)?,
     };
 
     let reply = match dest {
@@ -312,6 +309,21 @@ pub fn get_status<T: controller::ControllerRef>(
         return Err(error::ErrorKind::InvalidResponse.into());
     }
 
+    let event = if response.event_index > 0 {
+        Some(Event {
+            index: response.event_index,
+            event_type: response.event_type,
+            access_granted: response.event_access_granted,
+            door: response.event_door,
+            direction: response.event_direction,
+            card: response.event_card,
+            timestamp: response.event_timestamp,
+            reason: response.event_reason,
+        })
+    } else {
+        None
+    };
+
     Ok(StatusRecord {
         system_datetime: NaiveDateTime::new(response.system_date, response.system_time),
         system_error: response.system_error,
@@ -346,15 +358,6 @@ pub fn get_status<T: controller::ControllerRef>(
             lock_forced: (response.inputs & 0x02) == 0x02,
         },
 
-        event: Some(Event {
-            index: response.event_index,
-            event_type: response.event_type,
-            access_granted: response.event_access_granted,
-            door: response.event_door,
-            direction: response.event_direction,
-            card: response.event_card,
-            timestamp: response.event_timestamp,
-            reason: response.event_reason,
-        }),
+        event,
     })
 }

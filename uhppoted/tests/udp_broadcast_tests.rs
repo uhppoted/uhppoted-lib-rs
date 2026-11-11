@@ -213,3 +213,33 @@ fn get_status() {
 
     assert_eq!(result, expected);
 }
+
+#[test]
+fn get_status_no_event() {
+    let stub = stub::start();
+
+    let expected = StatusRecord {
+        system_datetime: NaiveDateTime::parse_from_str("2025-11-23 14:37:53", "%Y-%m-%d %H:%M:%S").unwrap(),
+        system_error: 27,
+        system_special_info: 39,
+        doors: Doors {
+            open: HashMap::from([(1, true), (2, false), (3, true), (4, true)]),
+
+            button: HashMap::from([(1, true), (2, true), (3, false), (4, true)]),
+
+            unlocked: HashMap::from([(1, true), (2, true), (3, true), (4, false)]),
+        },
+        alarms: Alarms {
+            flags: 9,
+            fire: true,
+            lock_forced: false,
+        },
+        event: None,
+    };
+
+    let controller = 405419897;
+
+    let result = uhppoted::get_status(&stub.cfg, controller, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}

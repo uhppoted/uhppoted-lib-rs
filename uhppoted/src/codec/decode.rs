@@ -180,6 +180,29 @@ impl codec::Decode for GetDoorResponse {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct SetDoorResponse {
+    pub controller: u32,
+    pub door: u8,
+    pub mode: u8,
+    pub delay: u8,
+}
+
+impl codec::Decode for SetDoorResponse {
+    fn decode(packet: &Msg) -> Result<SetDoorResponse> {
+        validate!(packet, 0x80);
+
+        let response = SetDoorResponse {
+            controller: unpack_uint32(packet, 4)?,
+            door: unpack_uint8(packet, 8)?,
+            mode: unpack_uint8(packet, 9)?,
+            delay: unpack_uint8(packet, 10)?,
+        };
+
+        Ok(response)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct GetStatusResponse {
     pub controller: u32,
     pub system_date: NaiveDate,
@@ -269,6 +292,10 @@ pub fn set_listener_response(packet: &Msg) -> Result<SetListenerResponse> {
 
 pub fn get_door_response(packet: &Msg) -> Result<GetDoorResponse> {
     GetDoorResponse::decode(packet)
+}
+
+pub fn set_door_response(packet: &Msg) -> Result<SetDoorResponse> {
+    SetDoorResponse::decode(packet)
 }
 
 pub fn get_status_response(packet: &Msg) -> Result<GetStatusResponse> {

@@ -12,6 +12,8 @@ NETMASK ?= 255.255.255.0
 GATEWAY ?= 192.168.1.1
 LISTENER ?= 192.168.1.125:60001
 DOOR ?= 3
+MODE ?= 2
+DELAY ?= 11
 
 clean:
 	cargo clean
@@ -91,6 +93,9 @@ set-listener: build
 
 get-door: build
 	$(CLI) get-door --controller $(CONTROLLER) --door $(DOOR)
+
+set-door: build
+	$(CLI) set-door --controller $(CONTROLLER) --door $(DOOR) --mode $(MODE) --delay $(DELAY)
 
 get-status: build
 	$(CLI) get-status --controller $(CONTROLLER)

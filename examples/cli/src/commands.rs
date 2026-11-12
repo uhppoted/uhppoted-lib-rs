@@ -194,6 +194,33 @@ pub fn get_door(
     };
 }
 
+pub fn set_door(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+    door: u8,
+    mode: u8,
+    delay: u8,
+) {
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::set_door(&cfg, c, door, mode, delay, TIMEOUT)
+    } else {
+        uhppoted::set_door(&cfg, controller, door, mode, delay, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
 pub fn get_status(
     cfg: uhppoted::Config,
     controller: u32,

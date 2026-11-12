@@ -284,6 +284,41 @@ pub fn get_door<T: controller::ControllerRef>(
     })
 }
 
+pub fn set_door<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    door: u8,
+    mode: u8,
+    delay: u8,
+    timeout: Duration,
+) -> Result<DoorRecord> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::set_door_request(id, door, mode, delay)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::set_door_response(&reply)?;
+
+    if response.controller != id || response.door != door {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(DoorRecord {
+        door: response.door,
+        mode: response.mode,
+        delay: response.delay,
+    })
+}
+
 pub fn get_status<T: controller::ControllerRef>(
     cfg: &Config,
     controller: T,

@@ -18,7 +18,7 @@ mod stub;
 const TIMEOUT: Duration = Duration::from_millis(5000);
 
 #[test]
-fn test_find_controllers() {
+fn find_controllers() {
     let stub = stub::start();
 
     let expected = vec![
@@ -57,7 +57,7 @@ fn test_find_controllers() {
 }
 
 #[test]
-fn test_get_controller() {
+fn get_controller() {
     let stub = stub::start();
 
     let expected = ControllerRecord {
@@ -79,7 +79,7 @@ fn test_get_controller() {
 
 #[test]
 #[allow(non_snake_case)]
-fn test_set_IPv4() {
+fn set_IPv4() {
     let stub = stub::start();
 
     let expected = true;
@@ -96,7 +96,7 @@ fn test_set_IPv4() {
 
 #[test]
 #[allow(non_snake_case)]
-fn test_get_time() {
+fn get_time() {
     let stub = stub::start();
 
     let expected: NaiveDateTime = "2025-11-01T12:34:56".parse().unwrap();
@@ -110,7 +110,7 @@ fn test_get_time() {
 
 #[test]
 #[allow(non_snake_case)]
-fn test_set_time() {
+fn set_time() {
     let stub = stub::start();
 
     let expected: NaiveDateTime = "2025-11-01T12:34:56".parse().unwrap();
@@ -124,7 +124,7 @@ fn test_set_time() {
 }
 
 #[test]
-fn test_get_listener() {
+fn get_listener() {
     let stub = stub::start();
 
     let expected = ListenerRecord {
@@ -140,7 +140,7 @@ fn test_get_listener() {
 }
 
 #[test]
-fn test_set_listener() {
+fn set_listener() {
     let stub = stub::start();
 
     let expected = true;
@@ -155,7 +155,7 @@ fn test_set_listener() {
 }
 
 #[test]
-fn test_get_door() {
+fn get_door() {
     let stub = stub::start();
 
     let expected = DoorRecord {
@@ -168,6 +168,26 @@ fn test_get_door() {
     let door: u8 = 4;
 
     let result = uhppoted::get_door(&stub.cfg, controller, door, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn set_door() {
+    let stub = stub::start();
+
+    let expected = DoorRecord {
+        door: 4,
+        mode: 2,
+        delay: 17,
+    };
+
+    let controller: u32 = 405419896;
+    let door: u8 = 4;
+    let mode: u8 = 2;
+    let delay: u8 = 17;
+
+    let result = uhppoted::set_door(&stub.cfg, controller, door, mode, delay, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
 }

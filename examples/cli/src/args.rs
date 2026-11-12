@@ -52,6 +52,9 @@ pub enum Commands {
     #[command(name = "get-door")]
     GetDoor(GetDoorArgs),
 
+    #[command(name = "set-door")]
+    SetDoor(SetDoorArgs),
+
     #[command(name = "get-status")]
     GetStatus(GetStatusArgs),
 }
@@ -183,6 +186,27 @@ pub struct GetDoorArgs {
 }
 
 #[derive(clap::Args, Debug)]
+pub struct SetDoorArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub door: u8,
+
+    #[arg(long)]
+    pub mode: u8,
+
+    #[arg(long)]
+    pub delay: u8,
+}
+
+#[derive(clap::Args, Debug)]
 pub struct GetStatusArgs {
     #[arg(long)]
     pub controller: u32,
@@ -205,6 +229,7 @@ impl Commands {
             Commands::GetListener { .. } => "get-listener",
             Commands::SetListener { .. } => "set-listener",
             Commands::GetDoor { .. } => "get-door",
+            Commands::SetDoor { .. } => "set-door",
             Commands::GetStatus { .. } => "get-status",
         }
     }
@@ -219,6 +244,7 @@ impl Commands {
             Commands::GetListener(cmd) => cmd.handle(cfg),
             Commands::SetListener(cmd) => cmd.handle(cfg),
             Commands::GetDoor(cmd) => cmd.handle(cfg),
+            Commands::SetDoor(cmd) => cmd.handle(cfg),
             Commands::GetStatus(cmd) => cmd.handle(cfg),
         }
     }
@@ -232,6 +258,7 @@ impl Commands {
             "get-listener",
             "set-listener",
             "get-door",
+            "set-door",
             "get-status",
         ]
     }
@@ -299,6 +326,20 @@ impl SetListenerArgs {
 impl GetDoorArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_door(cfg, self.controller, self.dest, self.transport, self.door);
+    }
+}
+
+impl SetDoorArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::set_door(
+            cfg,
+            self.controller,
+            self.dest,
+            self.transport,
+            self.door,
+            self.mode,
+            self.delay,
+        );
     }
 }
 

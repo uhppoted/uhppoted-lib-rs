@@ -134,6 +134,20 @@ pub fn get_door_request(controller: u32, door: u8) -> Result<Msg> {
     Ok(packet)
 }
 
+pub fn set_door_request(controller: u32, door: u8, mode: u8, delay: u8) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x80;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_uint8(door, &mut packet, 8)?;
+    pack_uint8(mode, &mut packet, 9)?;
+    pack_uint8(delay, &mut packet, 10)?;
+
+    Ok(packet)
+}
+
 pub fn get_status_request(controller: u32) -> Result<Msg> {
     let mut packet = [0x00; 64];
 

@@ -13,6 +13,7 @@ import (
 
 	"codegen/codegen"
 	"codegen/model"
+	"codegen/model/api"
 )
 
 //go:embed templates/messages.rs
@@ -22,12 +23,13 @@ var messages string
 var udp_broadcast_tests string
 
 type test struct {
-	Name     string
-	Function string
-	Args     []arg
-	Request  []string
-	Replies  [][]string
-	Expected []response
+	Name        string
+	Function    string
+	Args        []arg
+	Request     []string
+	Replies     [][]string
+	Expected    any
+	Annotations []string
 }
 
 type arg struct {
@@ -119,10 +121,26 @@ func transmogrify(functions []lib.Function) []test {
 	for _, f := range functions {
 		for _, t := range f.Tests {
 			name := codegen.SnakeCase(t.Name)
+			function := codegen.SnakeCase(f.Name)
+			annotations := []string{
+				"test",
+			}
 
 			if t.Name == "set-listener-addr-port" {
 				name = "set_listener"
 			}
+
+			if t.Name == "set-IPv4" {
+				name = "set_IPv4"
+				function = "set_IPv4"
+				annotations = append(annotations, "allow(non_snake_case)")
+			}
+
+			if f.Name == "set listener addr:port" {
+				function = "set_listener"
+			}
+
+			println(f.Name)
 
 			replies := [][]string{}
 			for _, reply := range t.Replies {
@@ -130,12 +148,13 @@ func transmogrify(functions []lib.Function) []test {
 			}
 
 			transmogrified = append(transmogrified, test{
-				Name:     name,
-				Function: codegen.SnakeCase(f.Name),
-				Args:     args(t),
-				Request:  packet(t.Request),
-				Replies:  replies,
-				Expected: expected(f, t),
+				Name:        name,
+				Function:    function,
+				Args:        args(t),
+				Request:     packet(t.Request),
+				Replies:     replies,
+				Expected:    expected(f, t),
+				Annotations: annotations,
 			})
 		}
 	}
@@ -159,11 +178,32 @@ func args(t lib.FuncTest) []arg {
 
 	for _, a := range t.Args {
 		switch {
+		case t.Name == "set-listener-addr-port" && a.Name == "interval":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Type:  ": Option<u8>",
+				Value: fmt.Sprintf("Some(%v)", a.Value),
+			})
+
 		// 		case t.Name == "set-first-card" && a.Name == "active-mode":
 		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
 
 		// 		case t.Name == "set-first-card" && a.Name == "inactive-mode":
 		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+
+		case a.Type == "uint32":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Type:  ": u32",
+				Value: a.Value,
+			})
+
+		case a.Type == "uint8":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Type:  ": u8",
+				Value: a.Value,
+			})
 
 		case a.Type == "IPv4":
 			args = append(args, arg{
@@ -187,8 +227,15 @@ func args(t lib.FuncTest) []arg {
 		case a.Type == "datetime":
 			args = append(args, arg{
 				Name:  codegen.SnakeCase(a.Name),
-				Type:  "",
+				Type:  ": NaiveDateTime",
 				Value: datetime(a.Value),
+			})
+
+		case a.Type == "mode":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Type:  ": u8",
+				Value: a.Value,
 			})
 
 		// 		case a.Type == "date":
@@ -196,9 +243,6 @@ func args(t lib.FuncTest) []arg {
 
 		// 		case a.Type == "HHmm":
 		// 			args = append(args, arg{HHmm(a.Value), comma})
-
-		// 		case a.Type == "mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
 
 		// 		case a.Type == "interlock":
 		// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
@@ -223,18 +267,8 @@ func args(t lib.FuncTest) []arg {
 	return args
 }
 
-func expected(f lib.Function, t lib.FuncTest) []response {
-	expected := []response{}
-
-	for _, reply := range t.Replies {
-		expected = append(expected, record(f, reply))
-	}
-
-	return expected
-}
-
-func record(f lib.Function, reply lib.Reply) response {
-	lookup := func(key string) any {
+func expected(f lib.Function, t lib.FuncTest) any {
+	lookup := func(reply lib.Reply, key string) any {
 		for _, v := range reply.Response {
 			if v.Name == key {
 				return v.Value
@@ -244,113 +278,140 @@ func record(f lib.Function, reply lib.Reply) response {
 		panic(fmt.Sprintf("missing expected value '%v", key))
 	}
 
+	if f.Name == "find-controllers" {
+		list := api.ControllerList{}
+
+		for _, reply := range t.Replies {
+			list = append(list, api.ControllerRecord{
+				Controller: uint32(lookup(reply, "controller").(int)),
+				Address:    netip.MustParseAddr(lookup(reply, "ip address").(string)),
+				Netmask:    netip.MustParseAddr(lookup(reply, "subnet mask").(string)),
+				Gateway:    netip.MustParseAddr(lookup(reply, "gateway").(string)),
+				MACAddr:    lookup(reply, "MAC address").(string),
+				Version:    lookup(reply, "version").(string),
+				Date:       api.MustParseDateOnly(lookup(reply, "date").(string)),
+			})
+		}
+
+		return list
+	}
+
+	if f.Name == "get controller" {
+		reply := t.Replies[0]
+
+		return api.ControllerRecord{
+			Controller: uint32(lookup(reply, "controller").(int)),
+			Address:    netip.MustParseAddr(lookup(reply, "ip address").(string)),
+			Netmask:    netip.MustParseAddr(lookup(reply, "subnet mask").(string)),
+			Gateway:    netip.MustParseAddr(lookup(reply, "gateway").(string)),
+			MACAddr:    lookup(reply, "MAC Address").(string),
+			Version:    lookup(reply, "version").(string),
+			Date:       api.MustParseDateOnly(lookup(reply, "date").(string)),
+		}
+	}
+
+	if f.Name == "set IPv4" {
+		return lookup(t.Replies[0], "ok").(bool)
+	}
+
+	if f.Name == "get time" {
+		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, lookup(t.Replies[0], "date-time").(string))
+	}
+
+	if f.Name == "set time" {
+		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, lookup(t.Replies[0], "date-time").(string))
+	}
+
+	if f.Name == "get listener" {
+		reply := t.Replies[0]
+
+		address := netip.MustParseAddr(lookup(reply, "address").(string))
+		port := uint16(lookup(reply, "port").(int))
+
+		return api.ListenerRecord{
+			Address:  netip.AddrPortFrom(address, port),
+			Interval: uint8(lookup(reply, "interval").(int)),
+		}
+	}
+
 	if f.Name == "set listener addr:port" {
-		return response{
-			Type:   "bool",
-			Values: []value{{Name: "", Value: lookup("ok")}},
+		return lookup(t.Replies[0], "ok").(bool)
+	}
+
+	if f.Name == "get door" {
+		reply := t.Replies[0]
+
+		return api.DoorRecord{
+			Door:  uint8(lookup(reply, "door").(int)),
+			Mode:  uint8(lookup(reply, "mode").(int)),
+			Delay: uint8(lookup(reply, "delay").(int)),
+		}
+	}
+
+	if f.Name == "set door" {
+		reply := t.Replies[0]
+
+		return api.DoorRecord{
+			Door:  uint8(lookup(reply, "door").(int)),
+			Mode:  uint8(lookup(reply, "mode").(int)),
+			Delay: uint8(lookup(reply, "delay").(int)),
 		}
 	}
 
 	if f.Name == "get status" {
-		// pub system_time: NaiveDateTime,
-		// pub system_error: u8,
-		// pub doors: Doors,
-		// pub alarms: Alarms,
-		// pub event: Event,
-		// pub special_info: u8,
+		reply := t.Replies[0]
 
-		return response{
-			Type: "StatusRecord",
-			Values: []value{
-				{Name: "system_datetime", Value: datetime(lookup("system.datetime"))},
-				{Name: "system_error", Value: lookup("system.error")},
-				{Name: "system_special_info", Value: lookup("system.special-info")},
+		open := map[uint8]bool{
+			1: lookup(reply, "door-1.open").(bool),
+			2: lookup(reply, "door-2.open").(bool),
+			3: lookup(reply, "door-3.open").(bool),
+			4: lookup(reply, "door-4.open").(bool),
+		}
 
-				{
-					Name: "doors",
-					Type: "doors",
-					Value: struct {
-						Door1Open any
-						Door2Open any
-						Door3Open any
-						Door4Open any
+		button := map[uint8]bool{
+			1: lookup(reply, "door-1.button").(bool),
+			2: lookup(reply, "door-2.button").(bool),
+			3: lookup(reply, "door-3.button").(bool),
+			4: lookup(reply, "door-4.button").(bool),
+		}
 
-						Door1Button any
-						Door2Button any
-						Door3Button any
-						Door4Button any
+		unlocked := map[uint8]bool{
+			1: lookup(reply, "door-1.unlocked").(bool),
+			2: lookup(reply, "door-2.unlocked").(bool),
+			3: lookup(reply, "door-3.unlocked").(bool),
+			4: lookup(reply, "door-4.unlocked").(bool),
+		}
 
-						Door1Unlocked any
-						Door2Unlocked any
-						Door3Unlocked any
-						Door4Unlocked any
-					}{
-						Door1Open: lookup("door-1.open"),
-						Door2Open: lookup("door-2.open"),
-						Door3Open: lookup("door-3.open"),
-						Door4Open: lookup("door-4.open"),
-
-						Door1Button: lookup("door-1.button"),
-						Door2Button: lookup("door-2.button"),
-						Door3Button: lookup("door-3.button"),
-						Door4Button: lookup("door-4.button"),
-
-						Door1Unlocked: lookup("door-1.unlocked"),
-						Door2Unlocked: lookup("door-2.unlocked"),
-						Door3Unlocked: lookup("door-3.unlocked"),
-						Door4Unlocked: lookup("door-4.unlocked"),
-					}},
-
-				{
-					Name: "alarms",
-					Type: "alarms",
-					Value: struct {
-						Flags      any
-						Fire       any
-						LockForced any
-					}{
-						Flags:      lookup("inputs"),
-						Fire:       lookup("alarms.fire"),
-						LockForced: lookup("alarms.lock-forced"),
-					},
-				},
-
-				{
-					Name: "event",
-					Type: "event",
-					Value: struct {
-						Index         any
-						Type          any
-						AccessGranted any
-						Door          any
-						Direction     any
-						Card          any
-						Timestamp     any
-						Reason        any
-					}{
-						Index:         lookup("event.index"),
-						Type:          lookup("event.type"),
-						AccessGranted: lookup("event.access-granted"),
-						Door:          lookup("event.door"),
-						Direction:     lookup("event.direction"),
-						Card:          lookup("event.card"),
-						Timestamp:     optional_timestamp(lookup("event.timestamp")),
-						Reason:        lookup("event.reason"),
-					},
-				},
+		return api.StatusRecord{
+			SystemDateTime:    api.MustParseDateTime((lookup(reply, "system.datetime").(string))),
+			SystemError:       uint8(lookup(reply, "system.error").(int)),
+			SystemSpecialInfo: uint8(lookup(reply, "system.special-info").(int)),
+			Doors: api.Doors{
+				Open:     open,
+				Button:   button,
+				Unlocked: unlocked,
+			},
+			Alarms: api.Alarms{
+				Flags:      uint8(lookup(reply, "inputs").(int)),
+				Fire:       lookup(reply, "alarms.fire").(bool),
+				LockForced: lookup(reply, "alarms.lock-forced").(bool),
+			},
+			Event: api.Event{
+				Index:         uint32(lookup(reply, "event.index").(int)),
+				EventType:     uint8(lookup(reply, "event.type").(int)),
+				AccessGranted: lookup(reply, "event.access-granted").(bool),
+				Door:          uint8(lookup(reply, "event.door").(int)),
+				Direction:     uint8(lookup(reply, "event.direction").(int)),
+				Card:          uint32(lookup(reply, "event.card").(int)),
+				Timestamp:     api.ParseOptionalDateTime((lookup(reply, "event.timestamp").(string))),
+				Reason:        uint8(lookup(reply, "event.reason").(int)),
 			},
 		}
 	}
 
-	values := []value{}
-	for _, v := range reply.Response {
-		values = append(values, val(v))
-	}
+	fmt.Println(">>>> OOOPS:", f.Name)
 
-	return response{
-		Type:   codegen.TitleCase(fmt.Sprintf("%v", f.Response.Name)),
-		Values: values,
-	}
+	return "???"
 }
 
 func val(v lib.Value) value {
@@ -429,7 +490,7 @@ func datetime(v any) string {
 	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
 		panic(fmt.Sprintf("invalid date (%v)", v))
 	} else {
-		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, datetime.Format("2006-01-02 15:04:05"))
+		return fmt.Sprintf(`"%v".parse().unwrap()`, datetime.Format("2006-01-02T15:04:05"))
 	}
 }
 

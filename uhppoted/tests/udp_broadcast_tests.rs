@@ -85,7 +85,7 @@ fn set_IPv4() {
     let expected = true;
 
     let controller: u32 = 405419896;
-    let address: Ipv4Addr = "192.168.1.100".parse().unwrap();
+    let address: Ipv4Addr = "192.168.1.125".parse().unwrap();
     let netmask: Ipv4Addr = "255.255.255.0".parse().unwrap();
     let gateway: Ipv4Addr = "192.168.1.1".parse().unwrap();
 
@@ -95,11 +95,10 @@ fn set_IPv4() {
 }
 
 #[test]
-#[allow(non_snake_case)]
 fn get_time() {
     let stub = stub::start();
 
-    let expected: NaiveDateTime = "2025-11-01T12:34:56".parse().unwrap();
+    let expected = NaiveDateTime::parse_from_str("2025-11-01 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
 
     let controller: u32 = 405419896;
 
@@ -109,16 +108,15 @@ fn get_time() {
 }
 
 #[test]
-#[allow(non_snake_case)]
 fn set_time() {
     let stub = stub::start();
 
-    let expected: NaiveDateTime = "2025-11-01T12:34:56".parse().unwrap();
+    let expected = NaiveDateTime::parse_from_str("2025-11-01 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
 
     let controller: u32 = 405419896;
-    let datetime: NaiveDateTime = "2025-11-04T12:34:56".parse().unwrap();
+    let date_time: NaiveDateTime = "2025-11-04T12:34:56".parse().unwrap();
 
-    let result = uhppoted::set_time(&stub.cfg, controller, datetime, TIMEOUT).unwrap();
+    let result = uhppoted::set_time(&stub.cfg, controller, date_time, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
 }
@@ -146,10 +144,10 @@ fn set_listener() {
     let expected = true;
 
     let controller: u32 = 405419897;
-    let address: SocketAddrV4 = "192.168.1.100:60001".parse().unwrap();
+    let listener: SocketAddrV4 = "192.168.1.100:60001".parse().unwrap();
     let interval: Option<u8> = Some(17);
 
-    let result = uhppoted::set_listener(&stub.cfg, controller, address, interval, TIMEOUT).unwrap();
+    let result = uhppoted::set_listener(&stub.cfg, controller, listener, interval, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
 }
@@ -203,14 +201,12 @@ fn get_status() {
 
         doors: Doors {
             open: HashMap::from([(1, false), (2, true), (3, false), (4, false)]),
-
             button: HashMap::from([(1, false), (2, false), (3, false), (4, true)]),
-
             unlocked: HashMap::from([(1, true), (2, true), (3, true), (4, false)]),
         },
 
         alarms: Alarms {
-            flags: 0x09,
+            flags: 9,
             fire: true,
             lock_forced: false,
         },
@@ -227,7 +223,7 @@ fn get_status() {
         }),
     };
 
-    let controller = 405419896;
+    let controller: u32 = 405419896;
 
     let result = uhppoted::get_status(&stub.cfg, controller, TIMEOUT).unwrap();
 
@@ -242,22 +238,23 @@ fn get_status_no_event() {
         system_datetime: NaiveDateTime::parse_from_str("2025-11-23 14:37:53", "%Y-%m-%d %H:%M:%S").unwrap(),
         system_error: 27,
         system_special_info: 39,
+
         doors: Doors {
             open: HashMap::from([(1, true), (2, false), (3, true), (4, true)]),
-
             button: HashMap::from([(1, true), (2, true), (3, false), (4, true)]),
-
             unlocked: HashMap::from([(1, true), (2, true), (3, true), (4, false)]),
         },
+
         alarms: Alarms {
             flags: 9,
             fire: true,
             lock_forced: false,
         },
+
         event: None,
     };
 
-    let controller = 405419897;
+    let controller: u32 = 405419897;
 
     let result = uhppoted::get_status(&stub.cfg, controller, TIMEOUT).unwrap();
 

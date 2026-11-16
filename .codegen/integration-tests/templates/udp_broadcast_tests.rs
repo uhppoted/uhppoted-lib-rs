@@ -19,7 +19,7 @@ const TIMEOUT: Duration = Duration::from_millis(5000);
 {{- range .Annotations}}
 #[{{ . }}]{{ end }}
 fn {{ .Name }}() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = {{ .Expected  }};
 {{ range $arg := .Args }}

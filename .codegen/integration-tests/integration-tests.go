@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/netip"
 	"os"
+	"slices"
 	"text/template"
 	"time"
 
@@ -21,6 +22,9 @@ var messages string
 
 //go:embed templates/udp_broadcast_tests.rs
 var udp_broadcast_tests string
+
+//go:embed templates/udp_connected_tests.rs
+var udp_connected_tests string
 
 type test struct {
 	Name        string
@@ -52,15 +56,15 @@ type value struct {
 func IntegrationTests() {
 	log.Println("generating integration tests")
 
-	tests := transmogrify(model.API)
-
 	if err := os.MkdirAll(".generated/integration-tests", 0750); err != nil {
 		log.Fatal(err)
 	}
 
 	// ... stub messages
 	{
-		const file = ".generated/integration-tests/messages.rs"
+		exclude := []lib.Function{}
+		tests := transmogrify(model.API, exclude)
+		file := ".generated/integration-tests/messages.rs"
 
 		if f, err := os.Create(file); err != nil {
 			log.Fatalf("%v", err)
@@ -75,7 +79,9 @@ func IntegrationTests() {
 
 	// ... UDP broadcast tests
 	{
-		const file = ".generated/integration-tests/udp_broadcast_tests.rs"
+		exclude := []lib.Function{}
+		tests := transmogrify(model.API, exclude)
+		file := ".generated/integration-tests/udp_broadcast_tests.rs"
 
 		if f, err := os.Create(file); err != nil {
 			log.Fatalf("%v", err)
@@ -83,6 +89,23 @@ func IntegrationTests() {
 			defer f.Close()
 
 			udpBroadcastTests(f, tests)
+
+			log.Printf("generated %s", file)
+		}
+	}
+
+	// ... connected UDP tests
+	{
+		exclude := []lib.Function{model.FindControllers}
+		tests := transmogrify(model.API, exclude)
+		file := ".generated/integration-tests/udp_connected_tests.rs"
+
+		if f, err := os.Create(file); err != nil {
+			log.Fatalf("%v", err)
+		} else {
+			defer f.Close()
+
+			udpConnectedTests(f, tests)
 
 			log.Printf("generated %s", file)
 		}
@@ -115,10 +138,29 @@ func udpBroadcastTests(f *os.File, tests []test) {
 	}
 }
 
-func transmogrify(functions []lib.Function) []test {
+func udpConnectedTests(f *os.File, tests []test) {
+	var data = struct {
+		Tests []test
+	}{
+		Tests: tests,
+	}
+
+	tmpl := template.Must(template.New("udp-connected-tests").Funcs(codegen.Functions).Parse(udp_connected_tests))
+	if err := tmpl.Execute(f, data); err != nil {
+		log.Fatalf("%v", err)
+	}
+}
+
+func transmogrify(functions []lib.Function, exclude []lib.Function) []test {
 	transmogrified := []test{}
 
 	for _, f := range functions {
+		if slices.ContainsFunc(exclude, func(g lib.Function) bool {
+			return g.Name == f.Name
+		}) {
+			continue
+		}
+
 		for _, t := range f.Tests {
 			name := codegen.SnakeCase(t.Name)
 			function := codegen.SnakeCase(f.Name)
@@ -139,8 +181,6 @@ func transmogrify(functions []lib.Function) []test {
 			if f.Name == "set listener addr:port" {
 				function = "set_listener"
 			}
-
-			println(f.Name)
 
 			replies := [][]string{}
 			for _, reply := range t.Replies {

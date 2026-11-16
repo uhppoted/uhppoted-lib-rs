@@ -18,7 +18,7 @@ const TIMEOUT: Duration = Duration::from_millis(5000);
 
 #[test]
 fn find_controllers() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = vec![
         ControllerRecord {
@@ -57,7 +57,7 @@ fn find_controllers() {
 
 #[test]
 fn get_controller() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = ControllerRecord {
         controller: 405419896,
@@ -79,7 +79,7 @@ fn get_controller() {
 #[test]
 #[allow(non_snake_case)]
 fn set_IPv4() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = true;
 
@@ -95,7 +95,7 @@ fn set_IPv4() {
 
 #[test]
 fn get_time() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = NaiveDateTime::parse_from_str("2025-11-01 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
 
@@ -108,7 +108,7 @@ fn get_time() {
 
 #[test]
 fn set_time() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = NaiveDateTime::parse_from_str("2025-11-01 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
 
@@ -122,7 +122,7 @@ fn set_time() {
 
 #[test]
 fn get_listener() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = ListenerRecord {
         address: "192.168.1.100:60001".parse().unwrap(),
@@ -138,7 +138,7 @@ fn get_listener() {
 
 #[test]
 fn set_listener() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = true;
 
@@ -153,7 +153,7 @@ fn set_listener() {
 
 #[test]
 fn get_door() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = DoorRecord {
         door: 4,
@@ -171,7 +171,7 @@ fn get_door() {
 
 #[test]
 fn set_door() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = DoorRecord {
         door: 4,
@@ -191,7 +191,7 @@ fn set_door() {
 
 #[test]
 fn open_door() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = true;
 
@@ -205,7 +205,7 @@ fn open_door() {
 
 #[test]
 fn get_status() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = StatusRecord {
         system_datetime: NaiveDateTime::parse_from_str("2022-08-23 09:49:39", "%Y-%m-%d %H:%M:%S").unwrap(),
@@ -245,7 +245,7 @@ fn get_status() {
 
 #[test]
 fn get_status_no_event() {
-    let stub = stub::start();
+    let stub = stub::broadcast();
 
     let expected = StatusRecord {
         system_datetime: NaiveDateTime::parse_from_str("2025-11-23 14:37:53", "%Y-%m-%d %H:%M:%S").unwrap(),

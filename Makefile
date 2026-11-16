@@ -40,7 +40,7 @@ lint:
 	cargo clippy
 
 integration-tests: build
-	cargo test --test udp_broadcast_tests -- --nocapture
+	cargo test --test integration_tests -- --nocapture
 
 build-all: build test lint integration-tests
 	cd examples/cli && cargo fmt && cargo build

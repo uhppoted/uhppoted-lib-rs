@@ -3,7 +3,7 @@ use std::sync::OnceLock;
 use std::thread;
 
 mod generated {
-    include!("generated/messages.rs");
+    include!("../generated/messages.rs");
 }
 
 pub(crate) type Packet = [u8; 64];

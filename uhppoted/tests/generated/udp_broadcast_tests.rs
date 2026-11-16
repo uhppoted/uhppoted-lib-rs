@@ -12,8 +12,7 @@ use uhppoted::Alarms;
 use uhppoted::Doors;
 use uhppoted::Event;
 
-#[path = "stub.rs"]
-mod stub;
+use crate::stub;
 
 const TIMEOUT: Duration = Duration::from_millis(5000);
 

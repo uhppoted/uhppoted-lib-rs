@@ -35,3 +35,4 @@ generate: build
 	cp .generated/codec/encode_tests.rs                    ../uhppoted/src/codec/generated/encode_tests.rs
 	cp .generated/codec/decode_tests.rs                    ../uhppoted/src/codec/generated/decode_tests.rs
 	cp .generated/integration-tests/messages.rs            ../uhppoted/tests/generated/messages.rs
+	cp .generated/integration-tests/udp_broadcast_tests.rs ../uhppoted/tests/generated/udp_broadcast_tests.rs

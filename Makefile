@@ -97,5 +97,8 @@ get-door: build
 set-door: build
 	$(CLI) set-door --controller $(CONTROLLER) --door $(DOOR) --mode $(MODE) --delay $(DELAY)
 
+open-door: build
+	$(CLI) open-door --controller $(CONTROLLER) --door $(DOOR)
+
 get-status: build
 	$(CLI) get-status --controller $(CONTROLLER)

@@ -191,6 +191,20 @@ fn set_door() {
 }
 
 #[test]
+fn open_door() {
+    let stub = stub::start();
+
+    let expected = true;
+
+    let controller: u32 = 405419896;
+    let door: u8 = 4;
+
+    let result = uhppoted::open_door(&stub.cfg, controller, door, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn get_status() {
     let stub = stub::start();
 

@@ -35,7 +35,8 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] get-listener
 - [x] set-listener
 - [x] get-door
-- [ ] set-door
+- [x] set-door
+- [ ] set-door-passcodes
 - [x] get-status
 - [ ] open-door
 - [ ] get-cards
@@ -57,7 +58,6 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [ ] set-pc-control
 - [ ] set-interlock
 - [ ] activate-keypads
-- [ ] set-door-passcodes
 - [ ] get-antipassback
 - [ ] set-antipassback
 - [ ] set-firstcard

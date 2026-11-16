@@ -358,6 +358,10 @@ func expected(f lib.Function, t lib.FuncTest) any {
 		}
 	}
 
+	if f.Name == "open door" {
+		return lookup(t.Replies[0], "ok").(bool)
+	}
+
 	if f.Name == "get status" {
 		reply := t.Replies[0]
 

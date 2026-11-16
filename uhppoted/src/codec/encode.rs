@@ -159,6 +159,18 @@ pub fn get_status_request(controller: u32) -> Result<Msg> {
     Ok(packet)
 }
 
+pub fn open_door_request(controller: u32, door: u8) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x40;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_uint8(door, &mut packet, 8)?;
+
+    Ok(packet)
+}
+
 fn pack_uint8(v: u8, packet: &mut Msg, offset: usize) -> Result<()> {
     packet[offset] = v;
     Ok(())

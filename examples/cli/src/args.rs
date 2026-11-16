@@ -55,6 +55,9 @@ pub enum Commands {
     #[command(name = "set-door")]
     SetDoor(SetDoorArgs),
 
+    #[command(name = "open-door")]
+    OpenDoor(OpenDoorArgs),
+
     #[command(name = "get-status")]
     GetStatus(GetStatusArgs),
 }
@@ -218,6 +221,21 @@ pub struct GetStatusArgs {
     pub transport: TransportArgs,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct OpenDoorArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub door: u8,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -231,6 +249,7 @@ impl Commands {
             Commands::GetDoor { .. } => "get-door",
             Commands::SetDoor { .. } => "set-door",
             Commands::GetStatus { .. } => "get-status",
+            Commands::OpenDoor { .. } => "open-door",
         }
     }
 
@@ -246,6 +265,7 @@ impl Commands {
             Commands::GetDoor(cmd) => cmd.handle(cfg),
             Commands::SetDoor(cmd) => cmd.handle(cfg),
             Commands::GetStatus(cmd) => cmd.handle(cfg),
+            Commands::OpenDoor(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -259,6 +279,7 @@ impl Commands {
             "set-listener",
             "get-door",
             "set-door",
+            "open-door",
             "get-status",
         ]
     }
@@ -340,6 +361,12 @@ impl SetDoorArgs {
             self.mode,
             self.delay,
         );
+    }
+}
+
+impl OpenDoorArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::open_door(cfg, self.controller, self.dest, self.transport, self.door);
     }
 }
 

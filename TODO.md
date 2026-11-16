@@ -38,7 +38,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] set-door
 - [ ] set-door-passcodes
 - [x] get-status
-- [ ] open-door
+- [x] open-door
 - [ ] get-cards
 - [ ] get-card
 - [ ] get-card-at-index

@@ -1,5 +1,5 @@
 use std::net::{SocketAddrV4, UdpSocket};
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 use std::thread;
 
 mod generated {
@@ -24,23 +24,28 @@ pub fn broadcast() -> &'static TestStub {
         };
 
         let addr: SocketAddrV4 = "0.0.0.0:60005".parse().unwrap();
+        let socket = UdpSocket::bind(addr).unwrap_or_else(|e| panic!("failed to bind UDP socket to {addr}: {e}"));
+        let messages = Arc::new(generated::message());
 
         thread::spawn(move || {
-            let socket = UdpSocket::bind(addr).unwrap_or_else(|e| panic!("failed to bind UDP socket to {addr}: {e}"));
-            let messages = generated::message();
+            let mut buffer = [0u8; 1024];
 
             loop {
-                let mut buffer = [0u8; 1024];
-
                 match socket.recv_from(&mut buffer) {
                     Ok((64, src)) => {
-                        if let Some(replies) = messages.get(&buffer[..64]) {
-                            for reply in replies {
-                                socket.send_to(reply, src).expect("error sending reply");
+                        let packet: [u8; 64] = buffer[..64].try_into().unwrap();
+                        let messages = Arc::clone(&messages);
+                        let tx_socket = socket.try_clone().expect("failed to clone UDP socket");
+
+                        thread::spawn(move || {
+                            if let Some(replies) = messages.get(&packet[..]) {
+                                for reply in replies {
+                                    tx_socket.send_to(reply, src).expect("error sending reply");
+                                }
+                            } else if packet[1] != 0x96 {
+                                dump("OOPS", "unrecognised packet", &packet);
                             }
-                        } else if buffer[1] != 0x96 {
-                            dump("OOPS", "unrecognised packet", &buffer[..64].try_into().unwrap());
-                        }
+                        });
                     }
 
                     Ok((n, src)) => {
@@ -70,23 +75,28 @@ pub fn udp() -> &'static TestStub {
         };
 
         let addr: SocketAddrV4 = "0.0.0.0:60004".parse().unwrap();
+        let socket = UdpSocket::bind(addr).unwrap_or_else(|e| panic!("failed to bind UDP socket to {addr}: {e}"));
+        let messages = Arc::new(generated::message());
 
         thread::spawn(move || {
-            let socket = UdpSocket::bind(addr).unwrap_or_else(|e| panic!("failed to bind UDP socket to {addr}: {e}"));
-            let messages = generated::message();
+            let mut buffer = [0u8; 1024];
 
             loop {
-                let mut buffer = [0u8; 1024];
-
                 match socket.recv_from(&mut buffer) {
                     Ok((64, src)) => {
-                        if let Some(replies) = messages.get(&buffer[..64]) {
-                            for reply in replies {
-                                socket.send_to(reply, src).expect("error sending reply");
+                        let packet: [u8; 64] = buffer[..64].try_into().unwrap();
+                        let messages = Arc::clone(&messages);
+                        let tx_socket = socket.try_clone().expect("failed to clone UDP socket");
+
+                        thread::spawn(move || {
+                            if let Some(replies) = messages.get(&packet[..]) {
+                                for reply in replies {
+                                    tx_socket.send_to(reply, src).expect("error sending reply");
+                                }
+                            } else if packet[1] != 0x96 {
+                                dump("OOPS", "unrecognised packet", &packet);
                             }
-                        } else if buffer[1] != 0x96 {
-                            dump("OOPS", "unrecognised packet", &buffer[..64].try_into().unwrap());
-                        }
+                        });
                     }
 
                     Ok((n, src)) => {

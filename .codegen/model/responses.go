@@ -17,7 +17,7 @@ var Responses = []types.Response{
 	// lib.SetListenerAddrPortResponse,
 	lib.GetDoorResponse,
 	lib.SetDoorResponse,
-	// lib.SetDoorPasscodesResponse,
+	lib.SetDoorPasscodesResponse,
 	lib.OpenDoorResponse,
 	lib.GetStatusResponse,
 	// lib.GetCardsResponse,

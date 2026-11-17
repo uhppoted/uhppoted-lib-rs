@@ -55,6 +55,9 @@ pub enum Commands {
     #[command(name = "set-door")]
     SetDoor(SetDoorArgs),
 
+    #[command(name = "set-door-passcodes")]
+    SetDoorPasscodes(SetDoorPasscodesArgs),
+
     #[command(name = "open-door")]
     OpenDoor(OpenDoorArgs),
 
@@ -210,7 +213,7 @@ pub struct SetDoorArgs {
 }
 
 #[derive(clap::Args, Debug)]
-pub struct GetStatusArgs {
+pub struct SetDoorPasscodesArgs {
     #[arg(long)]
     pub controller: u32,
 
@@ -219,6 +222,12 @@ pub struct GetStatusArgs {
 
     #[command(flatten)]
     pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub door: u8,
+
+    #[arg(long)]
+    pub passcodes: String,
 }
 
 #[derive(clap::Args, Debug)]
@@ -236,6 +245,18 @@ pub struct OpenDoorArgs {
     pub door: u8,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct GetStatusArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -248,8 +269,9 @@ impl Commands {
             Commands::SetListener { .. } => "set-listener",
             Commands::GetDoor { .. } => "get-door",
             Commands::SetDoor { .. } => "set-door",
-            Commands::GetStatus { .. } => "get-status",
+            Commands::SetDoorPasscodes { .. } => "set-door-passcodes",
             Commands::OpenDoor { .. } => "open-door",
+            Commands::GetStatus { .. } => "get-status",
         }
     }
 
@@ -264,8 +286,9 @@ impl Commands {
             Commands::SetListener(cmd) => cmd.handle(cfg),
             Commands::GetDoor(cmd) => cmd.handle(cfg),
             Commands::SetDoor(cmd) => cmd.handle(cfg),
-            Commands::GetStatus(cmd) => cmd.handle(cfg),
+            Commands::SetDoorPasscodes(cmd) => cmd.handle(cfg),
             Commands::OpenDoor(cmd) => cmd.handle(cfg),
+            Commands::GetStatus(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -279,6 +302,7 @@ impl Commands {
             "set-listener",
             "get-door",
             "set-door",
+            "set-door-passcodes",
             "open-door",
             "get-status",
         ]
@@ -360,6 +384,19 @@ impl SetDoorArgs {
             self.door,
             self.mode,
             self.delay,
+        );
+    }
+}
+
+impl SetDoorPasscodesArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::set_door_passcodes(
+            cfg,
+            self.controller,
+            self.dest,
+            self.transport,
+            self.door,
+            &self.passcodes,
         );
     }
 }

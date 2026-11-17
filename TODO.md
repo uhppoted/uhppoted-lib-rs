@@ -22,6 +22,16 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [ ] --debug: set log level
     - (?) only log if debug
 
+- [ ] integration tests
+    - [x] broadcast
+    - [x] connected UDP
+    - [ ] TCP
+    - [ ] timeouts
+    - [ ] invalid responses
+
+- [ ] codegen
+    - replace args.comma with 'join'
+
 - [ ] event types enum
 - [ ] event reasons enum
 - [ ] event directions enum

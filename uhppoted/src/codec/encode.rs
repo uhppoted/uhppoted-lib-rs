@@ -148,13 +148,37 @@ pub fn set_door_request(controller: u32, door: u8, mode: u8, delay: u8) -> Resul
     Ok(packet)
 }
 
-pub fn get_status_request(controller: u32) -> Result<Msg> {
+pub fn set_door_passcodes_request(
+    controller: u32,
+    door: u8,
+    passcode1: u32,
+    passcode2: u32,
+    passcode3: u32,
+    passcode4: u32,
+) -> Result<Msg> {
     let mut packet = [0x00; 64];
 
     packet[0] = 0x17;
-    packet[1] = 0x20;
+    packet[1] = 0x8c;
 
     pack_uint32(controller, &mut packet, 4)?;
+    pack_uint8(door, &mut packet, 8)?;
+
+    if passcode1 <= 999999 {
+        pack_uint32(passcode1, &mut packet, 12)?;
+    }
+
+    if passcode2 <= 999999 {
+        pack_uint32(passcode2, &mut packet, 16)?;
+    }
+
+    if passcode3 <= 999999 {
+        pack_uint32(passcode3, &mut packet, 20)?;
+    }
+
+    if passcode4 < 999999 {
+        pack_uint32(passcode4, &mut packet, 24)?;
+    }
 
     Ok(packet)
 }
@@ -167,6 +191,17 @@ pub fn open_door_request(controller: u32, door: u8) -> Result<Msg> {
 
     pack_uint32(controller, &mut packet, 4)?;
     pack_uint8(door, &mut packet, 8)?;
+
+    Ok(packet)
+}
+
+pub fn get_status_request(controller: u32) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x20;
+
+    pack_uint32(controller, &mut packet, 4)?;
 
     Ok(packet)
 }

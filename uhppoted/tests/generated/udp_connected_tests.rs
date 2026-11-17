@@ -161,6 +161,22 @@ fn set_door() {
 }
 
 #[test]
+fn set_door_passcodes() {
+    let stub = stub::udp();
+
+    let expected = true;
+
+    let controller: u32 = 405419896;
+    let door: u8 = 4;
+    let passcodes: Vec<u32> = vec![12345, 54321, 999999, 0];
+
+    let c = Controller::new(controller).with_address(DEST);
+    let result = uhppoted::set_door_passcodes(&stub.cfg, c, door, passcodes, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn open_door() {
     let stub = stub::udp();
 

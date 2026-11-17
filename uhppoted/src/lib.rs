@@ -319,6 +319,72 @@ pub fn set_door<T: controller::ControllerRef>(
     })
 }
 
+pub fn set_door_passcodes<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    door: u8,
+    passcodes: Vec<u32>,
+    timeout: Duration,
+) -> Result<bool> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let mut it = passcodes.into_iter().filter(|p| (1..=999_999).contains(p));
+
+    let passcode1 = it.next().unwrap_or(0);
+    let passcode2 = it.next().unwrap_or(0);
+    let passcode3 = it.next().unwrap_or(0);
+    let passcode4 = it.next().unwrap_or(0);
+
+    let request = encode::set_door_passcodes_request(id, door, passcode1, passcode2, passcode3, passcode4)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::set_door_passcodes_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.ok)
+}
+
+pub fn open_door<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    door: u8,
+    timeout: Duration,
+) -> Result<bool> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::open_door_request(id, door)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::open_door_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.ok)
+}
+
 pub fn get_status<T: controller::ControllerRef>(
     cfg: &Config,
     controller: T,
@@ -395,33 +461,4 @@ pub fn get_status<T: controller::ControllerRef>(
 
         event,
     })
-}
-
-pub fn open_door<T: controller::ControllerRef>(
-    cfg: &Config,
-    controller: T,
-    door: u8,
-    timeout: Duration,
-) -> Result<bool> {
-    let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
-    let request = encode::open_door_request(id, door)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
-    let response = decode::open_door_response(&reply)?;
-
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
-
-    Ok(response.ok)
 }

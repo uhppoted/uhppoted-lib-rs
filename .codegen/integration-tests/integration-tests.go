@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"os"
 	"slices"
+	"strings"
 	"text/template"
 	"time"
 
@@ -215,6 +216,7 @@ func packet(p []byte) []string {
 
 func args(t lib.FuncTest) []arg {
 	args := []arg{}
+	passcodes := []string{}
 
 	for _, a := range t.Args {
 		switch {
@@ -225,11 +227,8 @@ func args(t lib.FuncTest) []arg {
 				Value: fmt.Sprintf("Some(%v)", a.Value),
 			})
 
-		// 		case t.Name == "set-first-card" && a.Name == "active-mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
-		// 		case t.Name == "set-first-card" && a.Name == "inactive-mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
+		case t.Name == "set-door-passcodes" && (a.Name == "passcode 1" || a.Name == "passcode 2" || a.Name == "passcode 3" || a.Name == "passcode 4"):
+			passcodes = append(passcodes, fmt.Sprintf("%v", a.Value))
 
 		case a.Type == "uint32":
 			args = append(args, arg{
@@ -278,30 +277,20 @@ func args(t lib.FuncTest) []arg {
 				Value: a.Value,
 			})
 
-		// 		case a.Type == "date":
-		// 			args = append(args, arg{date(a.Value), comma})
-
-		// 		case a.Type == "HHmm":
-		// 			args = append(args, arg{HHmm(a.Value), comma})
-
-		// 		case a.Type == "interlock":
-		// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
-
-		// 		case a.Type == "task":
-		// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
-
-		// 		case a.Type == "anti-passback":
-		// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
-
-		// 		case a.Type == "bool":
-		// 			args = append(args, arg{codegen.Boolean(a.Value), comma})
-
 		default:
 			args = append(args, arg{
 				Name:  codegen.SnakeCase(a.Name),
 				Value: fmt.Sprintf("%v", a.Value),
 			})
 		}
+	}
+
+	if t.Name == "set-door-passcodes" {
+		args = append(args, arg{
+			Name:  "passcodes",
+			Type:  ": Vec<u32>",
+			Value: fmt.Sprintf("vec![%v]", strings.Join(passcodes, ",")),
+		})
 	}
 
 	return args
@@ -396,6 +385,10 @@ func expected(f lib.Function, t lib.FuncTest) any {
 			Mode:  uint8(lookup(reply, "mode").(int)),
 			Delay: uint8(lookup(reply, "delay").(int)),
 		}
+	}
+
+	if f.Name == "set door passcodes" {
+		return lookup(t.Replies[0], "ok").(bool)
 	}
 
 	if f.Name == "open door" {

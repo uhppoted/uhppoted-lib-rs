@@ -14,11 +14,14 @@ LISTENER ?= 192.168.1.125:60001
 DOOR ?= 3
 MODE ?= 2
 DELAY ?= 11
+PASSCODES ?= 12345,54321,987654
 
 clean:
 	cargo clean
 
 generate:
+	mkdir -p uhppoted/src/codec/generated
+	mkdir -p uhppoted/tests/generated
 	cd .codegen && make generate
 
 update:
@@ -30,7 +33,6 @@ format:
 	rustfmt uhppoted/src/codec/generated/*
 
 build: format
-	mkdir -p uhppoted/src/generated
 	cargo build --package uhppoted
 
 test: 
@@ -96,6 +98,9 @@ get-door: build
 
 set-door: build
 	$(CLI) set-door --controller $(CONTROLLER) --door $(DOOR) --mode $(MODE) --delay $(DELAY)
+
+set-door-passcodes: build
+	$(CLI) set-door-passcodes --controller $(CONTROLLER) --door $(DOOR) --passcodes $(PASSCODES)
 
 open-door: build
 	$(CLI) open-door --controller $(CONTROLLER) --door $(DOOR)

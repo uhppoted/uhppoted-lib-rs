@@ -132,7 +132,7 @@ func args(t lib.RequestTest) []arg {
 
 		case a.Type == "IPv4":
 			args = append(args, arg{
-				Name:  a.Name,
+				Name:  codegen.SnakeCase(a.Name),
 				Type:  ": Ipv4Addr",
 				Value: ipv4(a.Value),
 				Comma: comma,
@@ -140,9 +140,15 @@ func args(t lib.RequestTest) []arg {
 
 		case a.Type == "datetime":
 			args = append(args, arg{
-				Name:  a.Name,
-				Type:  "",
+				Name:  codegen.SnakeCase(a.Name),
 				Value: datetime(a.Value),
+				Comma: comma,
+			})
+
+		case a.Type == "pin":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Value: a.Value,
 				Comma: comma,
 			})
 
@@ -176,12 +182,9 @@ func args(t lib.RequestTest) []arg {
 					Comma: comma})
 			}
 
-		// 		case a.Type == "bool":
-		// 			args = append(args, arg{codegen.Boolean(a.Value), comma})
-
 		default:
 			args = append(args, arg{
-				Name:  a.Name,
+				Name:  codegen.SnakeCase(a.Name),
 				Value: fmt.Sprintf("%v", a.Value),
 				Comma: comma,
 			})

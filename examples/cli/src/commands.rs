@@ -221,6 +221,37 @@ pub fn set_door(
     };
 }
 
+pub fn set_door_passcodes(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+    door: u8,
+    passcodes: &str,
+) {
+    let pincodes: Vec<u32> = passcodes
+        .split(',')
+        .filter_map(|s| s.trim().parse::<u32>().ok())
+        .collect();
+
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::set_door_passcodes(&cfg, c, door, pincodes, TIMEOUT)
+    } else {
+        uhppoted::set_door_passcodes(&cfg, controller, door, pincodes, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
 pub fn open_door(
     cfg: uhppoted::Config,
     controller: u32,

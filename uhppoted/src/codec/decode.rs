@@ -203,6 +203,44 @@ impl codec::Decode for SetDoorResponse {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct SetDoorPasscodesResponse {
+    pub controller: u32,
+    pub ok: bool,
+}
+
+impl codec::Decode for SetDoorPasscodesResponse {
+    fn decode(packet: &Msg) -> Result<SetDoorPasscodesResponse> {
+        validate!(packet, 0x8c);
+
+        let response = SetDoorPasscodesResponse {
+            controller: unpack_uint32(packet, 4)?,
+            ok: unpack_bool(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct OpenDoorResponse {
+    pub controller: u32,
+    pub ok: bool,
+}
+
+impl codec::Decode for OpenDoorResponse {
+    fn decode(packet: &Msg) -> Result<OpenDoorResponse> {
+        validate!(packet, 0x40);
+
+        let response = OpenDoorResponse {
+            controller: unpack_uint32(packet, 4)?,
+            ok: unpack_bool(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct GetStatusResponse {
     pub controller: u32,
     pub system_date: NaiveDate,
@@ -265,25 +303,6 @@ impl codec::Decode for GetStatusResponse {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct OpenDoorResponse {
-    pub controller: u32,
-    pub ok: bool,
-}
-
-impl codec::Decode for OpenDoorResponse {
-    fn decode(packet: &Msg) -> Result<OpenDoorResponse> {
-        validate!(packet, 0x40);
-
-        let response = OpenDoorResponse {
-            controller: unpack_uint32(packet, 4)?,
-            ok: unpack_bool(packet, 8)?,
-        };
-
-        Ok(response)
-    }
-}
-
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -317,12 +336,16 @@ pub fn set_door_response(packet: &Msg) -> Result<SetDoorResponse> {
     SetDoorResponse::decode(packet)
 }
 
-pub fn get_status_response(packet: &Msg) -> Result<GetStatusResponse> {
-    GetStatusResponse::decode(packet)
+pub fn set_door_passcodes_response(packet: &Msg) -> Result<SetDoorPasscodesResponse> {
+    SetDoorPasscodesResponse::decode(packet)
 }
 
 pub fn open_door_response(packet: &Msg) -> Result<OpenDoorResponse> {
     OpenDoorResponse::decode(packet)
+}
+
+pub fn get_status_response(packet: &Msg) -> Result<GetStatusResponse> {
+    GetStatusResponse::decode(packet)
 }
 
 #[macro_export]

@@ -1,2 +1,3 @@
-pub mod udp_broadcast_tests;
-pub mod udp_connected_tests;
+pub mod broadcast_tests;
+pub mod tcp_tests;
+pub mod udp_tests;

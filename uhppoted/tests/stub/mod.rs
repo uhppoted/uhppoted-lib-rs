@@ -1,4 +1,5 @@
-use std::net::{SocketAddrV4, UdpSocket};
+use std::io::{Read, Write};
+use std::net::{SocketAddrV4, TcpListener, UdpSocket};
 use std::sync::{Arc, OnceLock};
 use std::thread;
 
@@ -106,6 +107,68 @@ pub fn udp() -> &'static TestStub {
                     Err(e) => {
                         eprintln!("UDP receive error: {e}");
                         break;
+                    }
+                }
+            }
+        });
+
+        TestStub { cfg }
+    })
+}
+
+pub fn tcp() -> &'static TestStub {
+    static STUB: OnceLock<TestStub> = OnceLock::new();
+
+    STUB.get_or_init(|| {
+        let cfg = uhppoted::Config {
+            bind: "0.0.0.0:0".parse().unwrap(),
+            broadcast: "255.255.255.255:60000".parse().unwrap(),
+            listen: "0.0.0.0:60001".parse().unwrap(),
+        };
+
+        let addr: SocketAddrV4 = "0.0.0.0:60003".parse().unwrap();
+        let listener = TcpListener::bind(addr).unwrap_or_else(|e| panic!("failed to bind TCP listener to {addr}: {e}"));
+        let messages = Arc::new(generated::message());
+
+        thread::spawn(move || {
+            for stream in listener.incoming() {
+                match stream {
+                    Ok(mut stream) => {
+                        let messages = Arc::clone(&messages);
+
+                        thread::spawn(move || {
+                            let mut buffer = [0u8; 1024];
+
+                            loop {
+                                match stream.read(&mut buffer) {
+                                    Ok(0) => break,
+                                    Ok(64) => {
+                                        let packet: [u8; 64] = buffer[..64].try_into().unwrap();
+
+                                        if let Some(replies) = messages.get(&packet[..]) {
+                                            for reply in replies {
+                                                if let Err(e) = stream.write_all(reply) {
+                                                    eprintln!("TCP write error: {e}");
+                                                    break;
+                                                }
+                                            }
+                                        } else if packet[1] != 0x96 {
+                                            dump("OOPS", "unrecognised packet", &packet);
+                                        }
+                                    }
+                                    Ok(n) => {
+                                        eprintln!("TCP receive {n} bytes (expected 64)");
+                                    }
+                                    Err(e) => {
+                                        eprintln!("TCP read error: {e}");
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    Err(e) => {
+                        eprintln!("TCP accept error: {e}");
                     }
                 }
             }

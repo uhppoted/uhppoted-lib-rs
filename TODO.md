@@ -25,7 +25,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [ ] integration tests
     - [x] broadcast
     - [x] connected UDP
-    - [ ] TCP
+    - [x] TCP
     - [ ] timeouts
     - [ ] invalid responses
 
@@ -46,9 +46,9 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] set-listener
 - [x] get-door
 - [x] set-door
-- [ ] set-door-passcodes
-- [x] get-status
+- [x] set-door-passcodes
 - [x] open-door
+- [x] get-status
 - [ ] get-cards
 - [ ] get-card
 - [ ] get-card-at-index

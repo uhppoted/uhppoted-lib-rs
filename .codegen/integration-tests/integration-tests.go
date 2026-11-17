@@ -21,11 +21,14 @@ import (
 //go:embed templates/messages.rs
 var messages string
 
-//go:embed templates/udp_broadcast_tests.rs
-var udp_broadcast_tests string
+//go:embed templates/broadcast_tests.rs
+var broadcast_tests string
 
-//go:embed templates/udp_connected_tests.rs
-var udp_connected_tests string
+//go:embed templates/udp_tests.rs
+var udp_tests string
+
+//go:embed templates/tcp_tests.rs
+var tcp_tests string
 
 type test struct {
 	Name        string
@@ -82,7 +85,7 @@ func IntegrationTests() {
 	{
 		exclude := []lib.Function{}
 		tests := transmogrify(model.API, exclude)
-		file := ".generated/integration-tests/udp_broadcast_tests.rs"
+		file := ".generated/integration-tests/broadcast_tests.rs"
 
 		if f, err := os.Create(file); err != nil {
 			log.Fatalf("%v", err)
@@ -99,7 +102,7 @@ func IntegrationTests() {
 	{
 		exclude := []lib.Function{model.FindControllers}
 		tests := transmogrify(model.API, exclude)
-		file := ".generated/integration-tests/udp_connected_tests.rs"
+		file := ".generated/integration-tests/udp_tests.rs"
 
 		if f, err := os.Create(file); err != nil {
 			log.Fatalf("%v", err)
@@ -107,6 +110,23 @@ func IntegrationTests() {
 			defer f.Close()
 
 			udpConnectedTests(f, tests)
+
+			log.Printf("generated %s", file)
+		}
+	}
+
+	// ... TCP tests
+	{
+		exclude := []lib.Function{model.FindControllers}
+		tests := transmogrify(model.API, exclude)
+		file := ".generated/integration-tests/tcp_tests.rs"
+
+		if f, err := os.Create(file); err != nil {
+			log.Fatalf("%v", err)
+		} else {
+			defer f.Close()
+
+			tcpTests(f, tests)
 
 			log.Printf("generated %s", file)
 		}
@@ -133,7 +153,7 @@ func udpBroadcastTests(f *os.File, tests []test) {
 		Tests: tests,
 	}
 
-	tmpl := template.Must(template.New("udp-broadcast-tests").Funcs(codegen.Functions).Parse(udp_broadcast_tests))
+	tmpl := template.Must(template.New("broadcast-tests").Funcs(codegen.Functions).Parse(broadcast_tests))
 	if err := tmpl.Execute(f, data); err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -146,7 +166,20 @@ func udpConnectedTests(f *os.File, tests []test) {
 		Tests: tests,
 	}
 
-	tmpl := template.Must(template.New("udp-connected-tests").Funcs(codegen.Functions).Parse(udp_connected_tests))
+	tmpl := template.Must(template.New("udp-tests").Funcs(codegen.Functions).Parse(udp_tests))
+	if err := tmpl.Execute(f, data); err != nil {
+		log.Fatalf("%v", err)
+	}
+}
+
+func tcpTests(f *os.File, tests []test) {
+	var data = struct {
+		Tests []test
+	}{
+		Tests: tests,
+	}
+
+	tmpl := template.Must(template.New("tcp-tests").Funcs(codegen.Functions).Parse(tcp_tests))
 	if err := tmpl.Execute(f, data); err != nil {
 		log.Fatalf("%v", err)
 	}

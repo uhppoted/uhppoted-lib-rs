@@ -8,6 +8,7 @@ use uhppoted::ControllerRecord;
 use uhppoted::DoorRecord;
 use uhppoted::ListenerRecord;
 use uhppoted::StatusRecord;
+use uhppoted::Transport;
 
 use uhppoted::Alarms;
 use uhppoted::Doors;
@@ -16,11 +17,11 @@ use uhppoted::Event;
 use crate::stub;
 
 const TIMEOUT: Duration = Duration::from_millis(5000);
-const DEST: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 60004);
+const DEST: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 60003);
 
 #[test]
 fn get_controller() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = ControllerRecord {
         controller: 405419896,
@@ -34,7 +35,9 @@ fn get_controller() {
 
     let controller: u32 = 405419896;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::get_controller(&stub.cfg, c, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -43,7 +46,7 @@ fn get_controller() {
 #[test]
 #[allow(non_snake_case)]
 fn set_IPv4() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = true;
 
@@ -52,7 +55,9 @@ fn set_IPv4() {
     let netmask: Ipv4Addr = "255.255.255.0".parse().unwrap();
     let gateway: Ipv4Addr = "192.168.1.1".parse().unwrap();
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::set_IPv4(&stub.cfg, c, address, netmask, gateway, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -60,13 +65,15 @@ fn set_IPv4() {
 
 #[test]
 fn get_time() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = NaiveDateTime::parse_from_str("2025-11-01 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
 
     let controller: u32 = 405419896;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::get_time(&stub.cfg, c, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -74,14 +81,16 @@ fn get_time() {
 
 #[test]
 fn set_time() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = NaiveDateTime::parse_from_str("2025-11-01 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
 
     let controller: u32 = 405419896;
     let date_time: NaiveDateTime = "2025-11-04T12:34:56".parse().unwrap();
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::set_time(&stub.cfg, c, date_time, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -89,7 +98,7 @@ fn set_time() {
 
 #[test]
 fn get_listener() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = ListenerRecord {
         address: "192.168.1.100:60001".parse().unwrap(),
@@ -98,7 +107,9 @@ fn get_listener() {
 
     let controller: u32 = 405419896;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::get_listener(&stub.cfg, c, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -106,7 +117,7 @@ fn get_listener() {
 
 #[test]
 fn set_listener() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = true;
 
@@ -114,7 +125,9 @@ fn set_listener() {
     let listener: SocketAddrV4 = "192.168.1.100:60001".parse().unwrap();
     let interval: Option<u8> = Some(17);
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::set_listener(&stub.cfg, c, listener, interval, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -122,7 +135,7 @@ fn set_listener() {
 
 #[test]
 fn get_door() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = DoorRecord {
         door: 4,
@@ -133,7 +146,9 @@ fn get_door() {
     let controller: u32 = 405419896;
     let door: u8 = 4;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::get_door(&stub.cfg, c, door, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -141,7 +156,7 @@ fn get_door() {
 
 #[test]
 fn set_door() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = DoorRecord {
         door: 4,
@@ -154,7 +169,9 @@ fn set_door() {
     let mode: u8 = 2;
     let delay: u8 = 17;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::set_door(&stub.cfg, c, door, mode, delay, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -162,7 +179,7 @@ fn set_door() {
 
 #[test]
 fn set_door_passcodes() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = true;
 
@@ -170,7 +187,9 @@ fn set_door_passcodes() {
     let door: u8 = 4;
     let passcodes: Vec<u32> = vec![12345, 54321, 999999, 0];
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::set_door_passcodes(&stub.cfg, c, door, passcodes, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -178,14 +197,16 @@ fn set_door_passcodes() {
 
 #[test]
 fn open_door() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = true;
 
     let controller: u32 = 405419896;
     let door: u8 = 4;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::open_door(&stub.cfg, c, door, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -193,7 +214,7 @@ fn open_door() {
 
 #[test]
 fn get_status() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = StatusRecord {
         system_datetime: NaiveDateTime::parse_from_str("2022-08-23 09:49:39", "%Y-%m-%d %H:%M:%S").unwrap(),
@@ -226,7 +247,9 @@ fn get_status() {
 
     let controller: u32 = 405419896;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::get_status(&stub.cfg, c, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
@@ -234,7 +257,7 @@ fn get_status() {
 
 #[test]
 fn get_status_no_event() {
-    let stub = stub::udp();
+    let stub = stub::tcp();
 
     let expected = StatusRecord {
         system_datetime: NaiveDateTime::parse_from_str("2025-11-23 14:37:53", "%Y-%m-%d %H:%M:%S").unwrap(),
@@ -258,7 +281,9 @@ fn get_status_no_event() {
 
     let controller: u32 = 405419897;
 
-    let c = Controller::new(controller).with_address(DEST);
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
     let result = uhppoted::get_status(&stub.cfg, c, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);

@@ -63,6 +63,9 @@ pub enum Commands {
 
     #[command(name = "get-status")]
     GetStatus(GetStatusArgs),
+
+    #[command(name = "get-cards")]
+    GetCards(GetCardsArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -257,6 +260,18 @@ pub struct GetStatusArgs {
     pub transport: TransportArgs,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct GetCardsArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -272,6 +287,7 @@ impl Commands {
             Commands::SetDoorPasscodes { .. } => "set-door-passcodes",
             Commands::OpenDoor { .. } => "open-door",
             Commands::GetStatus { .. } => "get-status",
+            Commands::GetCards { .. } => "get-cards",
         }
     }
 
@@ -289,6 +305,7 @@ impl Commands {
             Commands::SetDoorPasscodes(cmd) => cmd.handle(cfg),
             Commands::OpenDoor(cmd) => cmd.handle(cfg),
             Commands::GetStatus(cmd) => cmd.handle(cfg),
+            Commands::GetCards(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -305,6 +322,7 @@ impl Commands {
             "set-door-passcodes",
             "open-door",
             "get-status",
+            "get-cards",
         ]
     }
 }
@@ -410,5 +428,11 @@ impl OpenDoorArgs {
 impl GetStatusArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_status(cfg, self.controller, self.dest, self.transport);
+    }
+}
+
+impl GetCardsArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::get_cards(cfg, self.controller, self.dest, self.transport);
     }
 }

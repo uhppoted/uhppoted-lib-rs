@@ -107,3 +107,6 @@ open-door: build
 
 get-status: build
 	$(CLI) get-status --controller $(CONTROLLER)
+
+get-cards: build
+	$(CLI) get-cards --controller $(CONTROLLER)

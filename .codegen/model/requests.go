@@ -18,7 +18,7 @@ var Requests = []types.Request{
 	lib.SetDoorPasscodesRequest,
 	lib.OpenDoorRequest,
 	lib.GetStatusRequest,
-	// lib.GetCardsRequest,
+	lib.GetCardsRequest,
 	// lib.GetCardRequest,
 	// lib.GetCardAtIndexRequest,
 	// lib.PutCardRequest,

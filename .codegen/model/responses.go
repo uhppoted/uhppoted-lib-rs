@@ -20,7 +20,7 @@ var Responses = []types.Response{
 	lib.SetDoorPasscodesResponse,
 	lib.OpenDoorResponse,
 	lib.GetStatusResponse,
-	// lib.GetCardsResponse,
+	lib.GetCardsResponse,
 	// lib.GetCardResponse,
 	// lib.GetCardAtIndexResponse,
 	// lib.PutCardResponse,

@@ -49,7 +49,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] set-door-passcodes
 - [x] open-door
 - [x] get-status
-- [ ] get-cards
+- [x] get-cards
 - [ ] get-card
 - [ ] get-card-at-index
 - [ ] put-card

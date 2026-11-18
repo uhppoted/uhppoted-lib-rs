@@ -303,6 +303,25 @@ impl codec::Decode for GetStatusResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GetCardsResponse {
+    pub controller: u32,
+    pub cards: u32,
+}
+
+impl codec::Decode for GetCardsResponse {
+    fn decode(packet: &Msg) -> Result<GetCardsResponse> {
+        validate!(packet, 0x58);
+
+        let response = GetCardsResponse {
+            controller: unpack_uint32(packet, 4)?,
+            cards: unpack_uint32(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -346,6 +365,10 @@ pub fn open_door_response(packet: &Msg) -> Result<OpenDoorResponse> {
 
 pub fn get_status_response(packet: &Msg) -> Result<GetStatusResponse> {
     GetStatusResponse::decode(packet)
+}
+
+pub fn get_cards_response(packet: &Msg) -> Result<GetCardsResponse> {
+    GetCardsResponse::decode(packet)
 }
 
 #[macro_export]

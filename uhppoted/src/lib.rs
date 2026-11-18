@@ -462,3 +462,27 @@ pub fn get_status<T: controller::ControllerRef>(
         event,
     })
 }
+
+pub fn get_cards<T: controller::ControllerRef>(cfg: &Config, controller: T, timeout: Duration) -> Result<u32> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::get_cards_request(id)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::get_cards_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.cards)
+}

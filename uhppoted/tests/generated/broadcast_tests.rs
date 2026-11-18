@@ -288,3 +288,16 @@ fn get_status_no_event() {
 
     assert_eq!(result, expected);
 }
+
+#[test]
+fn get_cards() {
+    let stub = stub::broadcast();
+
+    let expected = 13579;
+
+    let controller: u32 = 405419896;
+
+    let result = uhppoted::get_cards(&stub.cfg, controller, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}

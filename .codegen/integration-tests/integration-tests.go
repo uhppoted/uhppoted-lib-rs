@@ -479,6 +479,10 @@ func expected(f lib.Function, t lib.FuncTest) any {
 		}
 	}
 
+	if f.Name == "get cards" {
+		return uint32(lookup(t.Replies[0], "cards").(int))
+	}
+
 	fmt.Println(">>>> OOOPS:", f.Name)
 
 	return "???"
@@ -486,12 +490,6 @@ func expected(f lib.Function, t lib.FuncTest) any {
 
 func val(v lib.Value) value {
 	switch {
-	// 		case t.Name == "set-first-card" && a.Name == "active-mode":
-	// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
-	// 		case t.Name == "set-first-card" && a.Name == "inactive-mode":
-	// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
 	case v.Type == "IPv4":
 		return value{
 			Name:  codegen.SnakeCase(v.Name),
@@ -509,35 +507,6 @@ func val(v lib.Value) value {
 			Name:  codegen.SnakeCase(v.Name),
 			Value: datetime(v.Value),
 		}
-
-	// 		case a.Type == "date":
-	// 			args = append(args, arg{date(a.Value), comma})
-
-	// 		case a.Type == "HHmm":
-	// 			args = append(args, arg{HHmm(a.Value), comma})
-
-	// 		case a.Type == "mode":
-	// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
-	// 		case a.Type == "interlock":
-	// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
-
-	// 		case a.Type == "task":
-	// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
-
-	// 		case a.Type == "anti-passback":
-	// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
-
-	// 		case a.Type == "address:port":
-	// 			{
-	// 				addrPort := netip.MustParseAddrPort(fmt.Sprintf("%v", a.Value))
-	// 				address := fmt.Sprintf(`Network_Socket_Address (Addr => Inet_Addr ("%v"), Port => Port_Type (%v))`, addrPort.Addr(), addrPort.Port())
-
-	// 				args = append(args, arg{address, comma})
-	// 			}
-
-	// 		case a.Type == "bool":
-	// 			args = append(args, arg{codegen.Boolean(a.Value), comma})
 
 	default:
 		return value{
@@ -573,28 +542,3 @@ func optional_timestamp(v any) string {
 		return fmt.Sprintf(`Some(NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap())`, datetime.Format("2006-01-02 15:04:05"))
 	}
 }
-
-// func date(v any) string {
-// 	s := fmt.Sprintf("%v", v)
-// 	if d, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
-// 		panic(fmt.Sprintf("invalid date (%v)", v))
-// 	} else {
-// 		year, month, day := d.Date()
-
-// 		return fmt.Sprintf(
-// 			"(Year => %v, Month => %v, Day => %v)",
-// 			uint16(year), uint8(month), uint8(day))
-// 	}
-// }
-
-// func HHmm(v any) string {
-// 	s := fmt.Sprintf("%v", v)
-// 	if hhmm, err := time.ParseInLocation("15:04", s, time.Local); err != nil {
-// 		panic(fmt.Sprintf("invalid HHmm (%v)", v))
-// 	} else {
-// 		hour := hhmm.Hour()
-// 		minute := hhmm.Minute()
-
-// 		return fmt.Sprintf("(Hour => %v, Minute => %v)", uint8(hour), uint8(minute))
-// 	}
-// }

@@ -16,7 +16,7 @@ use uhppoted::Event;
 
 use crate::stub;
 
-const TIMEOUT: Duration = Duration::from_millis(5000);
+const TIMEOUT: Duration = Duration::from_millis(2500);
 const DEST: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 60003);
 
 {{ range $test := .Tests }}

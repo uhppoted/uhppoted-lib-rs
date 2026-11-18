@@ -26,8 +26,10 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [x] broadcast
     - [x] connected UDP
     - [x] TCP
-    - [ ] timeouts
+    - [ ] listen
+    - [x] timeouts
     - [ ] invalid responses
+    - [ ] set TIMEOUT to 500
 
 - [ ] codegen
     - replace args.comma with 'join'

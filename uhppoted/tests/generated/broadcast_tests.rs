@@ -14,7 +14,7 @@ use uhppoted::Event;
 
 use crate::stub;
 
-const TIMEOUT: Duration = Duration::from_millis(5000);
+const TIMEOUT: Duration = Duration::from_millis(2500);
 
 #[test]
 fn find_controllers() {

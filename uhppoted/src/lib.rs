@@ -38,6 +38,7 @@ pub type ControllerRecord = structs::ControllerRecord;
 pub type ListenerRecord = structs::ListenerRecord;
 pub type StatusRecord = structs::StatusRecord;
 pub type DoorRecord = structs::DoorRecord;
+pub type CardRecord = structs::CardRecord;
 
 pub type Doors = structs::Doors;
 pub type Alarms = structs::Alarms;
@@ -485,4 +486,58 @@ pub fn get_cards<T: controller::ControllerRef>(cfg: &Config, controller: T, time
     }
 
     Ok(response.cards)
+}
+
+pub fn get_card<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    card: u32,
+    timeout: Duration,
+) -> Result<CardRecord> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let request = encode::get_card_request(id, card)?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::get_card_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    if response.card != card && response.card != 0 {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    if response.card == 0 {
+        return Err(error::ErrorKind::CardNotFound.into());
+    }
+
+    Ok(CardRecord {
+        card: response.card,
+        start_date: response.start_date,
+        end_date: response.end_date,
+        permissions: HashMap::from([
+            (1, response.door_1),
+            (2, response.door_2),
+            (3, response.door_3),
+            (4, response.door_4),
+        ]),
+        PIN: response.PIN,
+        first_card: HashMap::from([
+            (1, response.first_card & 0x01 == 0x01),
+            (2, response.first_card & 0x02 == 0x02),
+            (3, response.first_card & 0x04 == 0x04),
+            (4, response.first_card & 0x08 == 0x08),
+        ]),
+    })
 }

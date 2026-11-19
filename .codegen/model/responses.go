@@ -21,7 +21,7 @@ var Responses = []types.Response{
 	lib.OpenDoorResponse,
 	lib.GetStatusResponse,
 	lib.GetCardsResponse,
-	// lib.GetCardResponse,
+	lib.GetCardResponse,
 	// lib.GetCardAtIndexResponse,
 	// lib.PutCardResponse,
 	// lib.DeleteCardResponse,

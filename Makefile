@@ -15,6 +15,7 @@ DOOR ?= 3
 MODE ?= 2
 DELAY ?= 11
 PASSCODES ?= 12345,54321,987654
+CARD ?= 10058400
 
 clean:
 	cargo clean
@@ -110,3 +111,6 @@ get-status: build
 
 get-cards: build
 	$(CLI) get-cards --controller $(CONTROLLER)
+
+get-card: build
+	$(CLI) get-card --controller $(CONTROLLER) --card $(CARD)

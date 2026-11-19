@@ -20,7 +20,7 @@ var API = []types.Function{
 	lib.OpenDoor,
 	GetStatusRecord,
 	lib.GetCards,
-	// lib.GetCard,
+	lib.GetCard,
 	// lib.GetCardAtIndex,
 	// lib.PutCard,
 	// lib.DeleteCard,

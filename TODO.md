@@ -52,7 +52,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] open-door
 - [x] get-status
 - [x] get-cards
-- [ ] get-card
+- [x] get-card
 - [ ] get-card-at-index
 - [ ] put-card
 - [ ] delete-card

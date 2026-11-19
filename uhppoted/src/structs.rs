@@ -62,3 +62,14 @@ pub struct DoorRecord {
     pub mode: u8,
     pub delay: u8,
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct CardRecord {
+    pub card: u32,
+    pub start_date: Option<NaiveDate>,
+    pub end_date: Option<NaiveDate>,
+    pub permissions: HashMap<u8, u8>,
+    #[allow(non_snake_case)]
+    pub PIN: u32,
+    pub first_card: HashMap<u8, bool>,
+}

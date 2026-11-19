@@ -322,6 +322,42 @@ impl codec::Decode for GetCardsResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GetCardResponse {
+    pub controller: u32,
+    pub card: u32,
+    pub start_date: Option<NaiveDate>,
+    pub end_date: Option<NaiveDate>,
+    pub door_1: u8,
+    pub door_2: u8,
+    pub door_3: u8,
+    pub door_4: u8,
+    #[allow(non_snake_case)]
+    pub PIN: u32,
+    pub first_card: u8,
+}
+
+impl codec::Decode for GetCardResponse {
+    fn decode(packet: &Msg) -> Result<GetCardResponse> {
+        validate!(packet, 0x5a);
+
+        let response = GetCardResponse {
+            controller: unpack_uint32(packet, 4)?,
+            card: unpack_uint32(packet, 8)?,
+            start_date: unpack_optional_date(packet, 12)?,
+            end_date: unpack_optional_date(packet, 16)?,
+            door_1: unpack_uint8(packet, 20)?,
+            door_2: unpack_uint8(packet, 21)?,
+            door_3: unpack_uint8(packet, 22)?,
+            door_4: unpack_uint8(packet, 23)?,
+            PIN: unpack_uint24(packet, 24)?,
+            first_card: unpack_uint8(packet, 27)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -371,6 +407,10 @@ pub fn get_cards_response(packet: &Msg) -> Result<GetCardsResponse> {
     GetCardsResponse::decode(packet)
 }
 
+pub fn get_card_response(packet: &Msg) -> Result<GetCardResponse> {
+    GetCardResponse::decode(packet)
+}
+
 #[macro_export]
 macro_rules! bcd2string {
     ($slice:expr) => {{
@@ -396,6 +436,17 @@ fn unpack_uint16(packet: &Msg, offset: usize) -> Result<u16> {
     bytes.clone_from_slice(&packet[offset..offset + 2]);
 
     Ok(u16::from_le_bytes(bytes))
+}
+
+fn unpack_uint24(packet: &Msg, offset: usize) -> Result<u32> {
+    let mut bytes: [u8; 4] = [0; 4];
+
+    bytes[0] = packet[offset];
+    bytes[1] = packet[offset + 1];
+    bytes[2] = packet[offset + 2];
+    bytes[3] = 0;
+
+    Ok(u32::from_le_bytes(bytes))
 }
 
 fn unpack_uint32(packet: &Msg, offset: usize) -> Result<u32> {
@@ -459,6 +510,16 @@ fn unpack_shortdate(packet: &Msg, offset: usize) -> Result<NaiveDate> {
     match NaiveDate::parse_from_str(&s, "%Y%m%d") {
         Ok(date) => Ok(date),
         Err(_) => Err(Error::from(format!("invalid date string {}", s))),
+    }
+}
+
+fn unpack_optional_date(packet: &Msg, offset: usize) -> Result<Option<NaiveDate>> {
+    let slice: &[u8; 4] = packet[offset..offset + 4].try_into().unwrap();
+    let s: String = bcd2string!(slice);
+
+    match NaiveDate::parse_from_str(&s, "%Y%m%d") {
+        Ok(date) => Ok(Some(date)),
+        Err(_) => Ok(None),
     }
 }
 

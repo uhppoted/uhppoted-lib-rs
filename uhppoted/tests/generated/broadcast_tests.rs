@@ -1,8 +1,9 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDate, NaiveDateTime};
 use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
+use uhppoted::CardRecord;
 use uhppoted::ControllerRecord;
 use uhppoted::DoorRecord;
 use uhppoted::ListenerRecord;
@@ -300,4 +301,37 @@ fn get_cards() {
     let result = uhppoted::get_cards(&stub.cfg, controller, TIMEOUT).unwrap();
 
     assert_eq!(result, expected);
+}
+
+#[test]
+fn get_card() {
+    let stub = stub::broadcast();
+
+    let expected = CardRecord {
+        card: 10058400,
+        start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
+        end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
+        permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
+        PIN: 7531,
+        first_card: HashMap::from([(1, false), (2, false), (3, true), (4, true)]),
+    };
+
+    let controller: u32 = 405419896;
+    let card: u32 = 10058400;
+
+    let result = uhppoted::get_card(&stub.cfg, controller, card, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn get_card_not_found() {
+    let stub = stub::broadcast();
+    let controller: u32 = 405419896;
+    let card: u32 = 10058401;
+
+    let result = uhppoted::get_card(&stub.cfg, controller, card, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Card not found"));
 }

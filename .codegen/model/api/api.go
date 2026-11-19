@@ -30,6 +30,15 @@ type DoorRecord struct {
 	Delay uint8
 }
 
+type CardRecord struct {
+	Card        uint32
+	StartDate   time.Time
+	EndDate     time.Time
+	Permissions map[uint8]uint8
+	PIN         uint32
+	FirstCard   map[uint8]bool
+}
+
 type StatusRecord struct {
 	SystemDateTime    time.Time
 	SystemError       uint8
@@ -117,6 +126,34 @@ func (v DoorRecord) String() string {
 	fmt.Fprintf(&b, "        door: %v,\n", v.Door)
 	fmt.Fprintf(&b, "        mode: %v,\n", v.Mode)
 	fmt.Fprintf(&b, "        delay: %v,\n", v.Delay)
+	fmt.Fprintf(&b, "    }")
+
+	return b.String()
+}
+
+func (v CardRecord) String() string {
+	var b strings.Builder
+
+	startDate := fmt.Sprintf("Some(NaiveDate::parse_from_str(\"%v\", \"%%Y-%%m-%%d\").unwrap())", v.StartDate.Format("2006-01-02"))
+	if v.StartDate.IsZero() {
+		startDate = "None"
+	}
+
+	endDate := fmt.Sprintf("Some(NaiveDate::parse_from_str(\"%v\", \"%%Y-%%m-%%d\").unwrap())", v.EndDate.Format("2006-01-02"))
+	if v.EndDate.IsZero() {
+		endDate = "None"
+	}
+
+	permissions := fmt.Sprintf("HashMap::from([(1, %v), (2, %v), (3, %v), (4, %v)])", v.Permissions[1], v.Permissions[2], v.Permissions[3], v.Permissions[4])
+	firstcard := fmt.Sprintf("HashMap::from([(1, %v), (2, %v), (3, %v), (4, %v)])", v.FirstCard[1], v.FirstCard[2], v.FirstCard[3], v.FirstCard[4])
+
+	fmt.Fprintf(&b, "%s {\n", "CardRecord")
+	fmt.Fprintf(&b, "        card: %v,\n", v.Card)
+	fmt.Fprintf(&b, "        start_date: %v,\n", startDate)
+	fmt.Fprintf(&b, "        end_date: %v,\n", endDate)
+	fmt.Fprintf(&b, "        permissions: %v,\n", permissions)
+	fmt.Fprintf(&b, "        PIN: %v,\n", v.PIN)
+	fmt.Fprintf(&b, "        first_card: %v,\n", firstcard)
 	fmt.Fprintf(&b, "    }")
 
 	return b.String()

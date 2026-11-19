@@ -149,6 +149,12 @@ func values(t lib.ResponseTest) []val {
 				Value: shortDate(a.Value),
 			})
 
+		case a.Type == "optional date":
+			values = append(values, val{
+				Name:  codegen.SnakeCase(a.Name),
+				Value: optionalDate(a.Value),
+			})
+
 		case a.Type == "time":
 			values = append(values, val{
 				Name:  codegen.SnakeCase(a.Name),
@@ -211,6 +217,18 @@ func shortDate(v any) string {
 	}
 }
 
+func optionalDate(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if s == "" || s == "0001-01-01" {
+		return "None"
+	} else if date, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid date (%v)", v))
+	} else {
+		return fmt.Sprintf(`Some(NaiveDate::parse_from_str("%v", "%%Y-%%m-%%d").unwrap())`, date.Format("2006-01-02"))
+	}
+}
+
 func timeOnly(v any) string {
 	s := fmt.Sprintf("%v", v)
 
@@ -225,7 +243,7 @@ func datetime(v any) string {
 	s := fmt.Sprintf("%v", v)
 
 	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
-		panic(fmt.Sprintf("invalid date (%v)", v))
+		panic(fmt.Sprintf("invalid datetime (%v)", v))
 	} else {
 		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, datetime.Format("2006-01-02 15:04:05"))
 	}
@@ -234,8 +252,10 @@ func datetime(v any) string {
 func optionalDateTime(v any) string {
 	s := fmt.Sprintf("%v", v)
 
-	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
-		panic(fmt.Sprintf("invalid timesat (%v)", v))
+	if s == "" || s == "0001-01-01 00:00:00" {
+		return "None"
+	} else if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid datetime (%v)", v))
 	} else {
 		return fmt.Sprintf(`Some(NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap())`, datetime.Format("2006-01-02 15:04:05"))
 	}

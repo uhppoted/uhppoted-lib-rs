@@ -57,6 +57,11 @@ type value struct {
 	Value any
 }
 
+type excludes struct {
+	functions []lib.Function
+	tests     []string
+}
+
 func IntegrationTests() {
 	log.Println("generating integration tests")
 
@@ -66,7 +71,11 @@ func IntegrationTests() {
 
 	// ... stub messages
 	{
-		exclude := []lib.Function{}
+		exclude := excludes{
+			functions: []lib.Function{},
+			tests:     []string{},
+		}
+
 		tests := transmogrify(model.API, exclude)
 		file := ".generated/integration-tests/messages.rs"
 
@@ -83,7 +92,11 @@ func IntegrationTests() {
 
 	// ... UDP broadcast tests
 	{
-		exclude := []lib.Function{}
+		exclude := excludes{
+			functions: []lib.Function{},
+			tests:     []string{"get-card-not-found"},
+		}
+
 		tests := transmogrify(model.API, exclude)
 		file := ".generated/integration-tests/broadcast_tests.rs"
 
@@ -100,7 +113,11 @@ func IntegrationTests() {
 
 	// ... connected UDP tests
 	{
-		exclude := []lib.Function{model.FindControllers}
+		exclude := excludes{
+			functions: []lib.Function{model.FindControllers},
+			tests:     []string{"get-card-not-found"},
+		}
+
 		tests := transmogrify(model.API, exclude)
 		file := ".generated/integration-tests/udp_tests.rs"
 
@@ -117,7 +134,11 @@ func IntegrationTests() {
 
 	// ... TCP tests
 	{
-		exclude := []lib.Function{model.FindControllers}
+		exclude := excludes{
+			functions: []lib.Function{model.FindControllers},
+			tests:     []string{"get-card-not-found"},
+		}
+
 		tests := transmogrify(model.API, exclude)
 		file := ".generated/integration-tests/tcp_tests.rs"
 
@@ -185,17 +206,23 @@ func tcpTests(f *os.File, tests []test) {
 	}
 }
 
-func transmogrify(functions []lib.Function, exclude []lib.Function) []test {
+func transmogrify(functions []lib.Function, exclude excludes) []test {
 	transmogrified := []test{}
 
 	for _, f := range functions {
-		if slices.ContainsFunc(exclude, func(g lib.Function) bool {
+		if slices.ContainsFunc(exclude.functions, func(g lib.Function) bool {
 			return g.Name == f.Name
 		}) {
 			continue
 		}
 
 		for _, t := range f.Tests {
+			if slices.ContainsFunc(exclude.tests, func(g string) bool {
+				return g == t.Name
+			}) {
+				continue
+			}
+
 			name := codegen.SnakeCase(t.Name)
 			function := codegen.SnakeCase(f.Name)
 			annotations := []string{
@@ -481,6 +508,33 @@ func expected(f lib.Function, t lib.FuncTest) any {
 
 	if f.Name == "get cards" {
 		return uint32(lookup(t.Replies[0], "cards").(int))
+	}
+
+	if f.Name == "get card" {
+		reply := t.Replies[0]
+
+		permissions := map[uint8]uint8{
+			1: uint8(lookup(reply, "door 1").(int)),
+			2: uint8(lookup(reply, "door 2").(int)),
+			3: uint8(lookup(reply, "door 3").(int)),
+			4: uint8(lookup(reply, "door 4").(int)),
+		}
+
+		firstcard := map[uint8]bool{
+			1: uint8(lookup(reply, "first card").(int))&0x01 == 0x01,
+			2: uint8(lookup(reply, "first card").(int))&0x02 == 0x02,
+			3: uint8(lookup(reply, "first card").(int))&0x04 == 0x04,
+			4: uint8(lookup(reply, "first card").(int))&0x08 == 0x08,
+		}
+
+		return api.CardRecord{
+			Card:        uint32(lookup(reply, "card").(int)),
+			StartDate:   api.ParseOptionalDate((lookup(reply, "start-date").(string))),
+			EndDate:     api.ParseOptionalDate((lookup(reply, "end-date").(string))),
+			Permissions: permissions,
+			PIN:         uint32(lookup(reply, "PIN").(int)),
+			FirstCard:   firstcard,
+		}
 	}
 
 	fmt.Println(">>>> OOOPS:", f.Name)

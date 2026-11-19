@@ -28,7 +28,8 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [x] TCP
     - [ ] listen
     - [x] timeouts
-    - [ ] invalid responses
+    - [x] invalid SOM
+    - [ ] invalid opcode
     - [ ] set TIMEOUT to 500
 
 - [ ] codegen

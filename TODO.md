@@ -28,12 +28,14 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [x] TCP
     - [x] timeouts
     - [x] invalid SOM
-    - [ ] invalid opcode
+    - [x] invalid opcode
     - [x] set TIMEOUT to 500
     - [ ] listen
 
 - [ ] codegen
     - replace args.comma with 'join'
+    - decode: invalid SOM unit tests
+    - decode: invalid opcode unit tests
 
 - [ ] event types enum
 - [ ] event reasons enum

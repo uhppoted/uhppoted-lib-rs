@@ -23,14 +23,24 @@ fn broadcast_invalid_SOM() {
 
 #[test]
 #[allow(non_snake_case)]
+fn broadcast_invalid_opcode() {
+    let stub = stub::broadcast();
+    let controller: u32 = 201020304;
+    let result = uhppoted::get_time(&stub.cfg, controller, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Invalid reply function code (94)"));
+}
+
+#[test]
+#[allow(non_snake_case)]
 fn udp_invalid_SOM() {
     let stub = stub::udp();
-    let controller: u32 = 201020304;
-    let c = Controller::new(controller)
+    let controller = Controller::new(201020304)
         .with_address(UDP)
         .with_transport(Transport::Udp);
 
-    let result = uhppoted::get_controller(&stub.cfg, c, TIMEOUT);
+    let result = uhppoted::get_controller(&stub.cfg, controller, TIMEOUT);
     let err = result.as_ref().unwrap_err();
 
     assert!(err.to_string().contains("Invalid reply start of message byte (18)"));
@@ -38,15 +48,42 @@ fn udp_invalid_SOM() {
 
 #[test]
 #[allow(non_snake_case)]
+fn udp_invalid_opcode() {
+    let stub = stub::udp();
+    let controller = Controller::new(201020304)
+        .with_address(UDP)
+        .with_transport(Transport::Udp);
+
+    let result = uhppoted::get_time(&stub.cfg, controller, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Invalid reply function code (94)"));
+}
+
+#[test]
+#[allow(non_snake_case)]
 fn tcp_invalid_SOM() {
     let stub = stub::tcp();
-    let controller: u32 = 201020304;
-    let c = Controller::new(controller)
+    let controller = Controller::new(201020304)
         .with_address(TCP)
         .with_transport(Transport::Tcp);
 
-    let result = uhppoted::get_controller(&stub.cfg, c, TIMEOUT);
+    let result = uhppoted::get_controller(&stub.cfg, controller, TIMEOUT);
     let err = result.as_ref().unwrap_err();
 
     assert!(err.to_string().contains("Invalid reply start of message byte (18)"));
+}
+
+#[test]
+#[allow(non_snake_case)]
+fn tcp_invalid_opcode() {
+    let stub = stub::tcp();
+    let controller = Controller::new(201020304)
+        .with_address(TCP)
+        .with_transport(Transport::Tcp);
+
+    let result = uhppoted::get_time(&stub.cfg, controller, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Invalid reply function code (94)"));
 }

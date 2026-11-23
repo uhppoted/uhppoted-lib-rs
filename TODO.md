@@ -26,11 +26,11 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [x] broadcast
     - [x] connected UDP
     - [x] TCP
-    - [ ] listen
     - [x] timeouts
     - [x] invalid SOM
     - [ ] invalid opcode
-    - [ ] set TIMEOUT to 500
+    - [x] set TIMEOUT to 500
+    - [ ] listen
 
 - [ ] codegen
     - replace args.comma with 'join'
@@ -54,7 +54,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] get-status
 - [x] get-cards
 - [x] get-card
-- [ ] get-card-at-index
+- [x] get-card-at-index
 - [ ] put-card
 - [ ] delete-card
 - [ ] delete-all-cards

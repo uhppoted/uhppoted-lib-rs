@@ -229,6 +229,18 @@ pub fn get_card_request(controller: u32, card: u32) -> Result<Msg> {
     Ok(packet)
 }
 
+pub fn get_card_at_index_request(controller: u32, index: u32) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x5c;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_uint32(index, &mut packet, 8)?;
+
+    Ok(packet)
+}
+
 fn pack_uint8(v: u8, packet: &mut Msg, offset: usize) -> Result<()> {
     packet[offset] = v;
     Ok(())

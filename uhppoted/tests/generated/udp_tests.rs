@@ -331,6 +331,30 @@ fn get_card() {
 }
 
 #[test]
+fn get_card_at_index() {
+    let stub = stub::udp();
+
+    let expected = CardRecord {
+        card: 10058400,
+        start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
+        end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
+        permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
+        PIN: 7531,
+        first_card: HashMap::from([(1, true), (2, true), (3, false), (4, true)]),
+    };
+
+    let controller: u32 = 405419896;
+    let index: u32 = 135;
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Udp);
+    let result = uhppoted::get_card_at_index(&stub.cfg, c, index, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn get_card_not_found() {
     let stub = stub::udp();
     let controller: u32 = 405419896;
@@ -344,4 +368,36 @@ fn get_card_not_found() {
     let err = result.as_ref().unwrap_err();
 
     assert!(err.to_string().contains("Card not found"));
+}
+
+#[test]
+fn get_card_at_index_not_found() {
+    let stub = stub::udp();
+    let controller: u32 = 405419896;
+    let index: u32 = 136;
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Udp);
+
+    let result = uhppoted::get_card_at_index(&stub.cfg, c, index, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Card not found"));
+}
+
+#[test]
+fn get_card_at_index_deleted() {
+    let stub = stub::udp();
+    let controller: u32 = 405419896;
+    let index: u32 = 137;
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Udp);
+
+    let result = uhppoted::get_card_at_index(&stub.cfg, c, index, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Card deleted"));
 }

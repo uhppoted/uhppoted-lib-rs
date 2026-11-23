@@ -94,7 +94,7 @@ func IntegrationTests() {
 	{
 		exclude := excludes{
 			functions: []lib.Function{},
-			tests:     []string{"get-card-not-found"},
+			tests:     []string{"get-card-not-found", "get-card-at-index-not-found", "get-card-at-index-deleted"},
 		}
 
 		tests := transmogrify(model.API, exclude)
@@ -115,7 +115,7 @@ func IntegrationTests() {
 	{
 		exclude := excludes{
 			functions: []lib.Function{model.FindControllers},
-			tests:     []string{"get-card-not-found"},
+			tests:     []string{"get-card-not-found", "get-card-at-index-not-found", "get-card-at-index-deleted"},
 		}
 
 		tests := transmogrify(model.API, exclude)
@@ -136,7 +136,7 @@ func IntegrationTests() {
 	{
 		exclude := excludes{
 			functions: []lib.Function{model.FindControllers},
-			tests:     []string{"get-card-not-found"},
+			tests:     []string{"get-card-not-found", "get-card-at-index-not-found", "get-card-at-index-deleted"},
 		}
 
 		tests := transmogrify(model.API, exclude)
@@ -529,6 +529,33 @@ func expected(f lib.Function, t lib.FuncTest) any {
 
 		return api.CardRecord{
 			Card:        uint32(lookup(reply, "card").(int)),
+			StartDate:   api.ParseOptionalDate((lookup(reply, "start-date").(string))),
+			EndDate:     api.ParseOptionalDate((lookup(reply, "end-date").(string))),
+			Permissions: permissions,
+			PIN:         uint32(lookup(reply, "PIN").(int)),
+			FirstCard:   firstcard,
+		}
+	}
+
+	if f.Name == "get card at index" {
+		reply := t.Replies[0]
+
+		permissions := map[uint8]uint8{
+			1: uint8(lookup(reply, "door 1").(int)),
+			2: uint8(lookup(reply, "door 2").(int)),
+			3: uint8(lookup(reply, "door 3").(int)),
+			4: uint8(lookup(reply, "door 4").(int)),
+		}
+
+		firstcard := map[uint8]bool{
+			1: uint8(lookup(reply, "first card").(int))&0x01 == 0x01,
+			2: uint8(lookup(reply, "first card").(int))&0x02 == 0x02,
+			3: uint8(lookup(reply, "first card").(int))&0x04 == 0x04,
+			4: uint8(lookup(reply, "first card").(int))&0x08 == 0x08,
+		}
+
+		return api.CardRecord{
+			Card:        lookup(reply, "card").(uint32),
 			StartDate:   api.ParseOptionalDate((lookup(reply, "start-date").(string))),
 			EndDate:     api.ParseOptionalDate((lookup(reply, "end-date").(string))),
 			Permissions: permissions,

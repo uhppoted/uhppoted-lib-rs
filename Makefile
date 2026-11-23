@@ -16,6 +16,7 @@ MODE ?= 2
 DELAY ?= 11
 PASSCODES ?= 12345,54321,987654
 CARD ?= 10058400
+CARD_INDEX ?= 3
 
 clean:
 	cargo clean
@@ -114,3 +115,6 @@ get-cards: build
 
 get-card: build
 	$(CLI) get-card --controller $(CONTROLLER) --card $(CARD)
+
+get-card-at-index: build
+	$(CLI) get-card-at-index --controller $(CONTROLLER) --index $(CARD_INDEX)

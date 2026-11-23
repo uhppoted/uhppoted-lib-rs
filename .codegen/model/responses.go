@@ -22,7 +22,7 @@ var Responses = []types.Response{
 	lib.GetStatusResponse,
 	lib.GetCardsResponse,
 	lib.GetCardResponse,
-	// lib.GetCardAtIndexResponse,
+	lib.GetCardAtIndexResponse,
 	// lib.PutCardResponse,
 	// lib.DeleteCardResponse,
 	// lib.DeleteAllCardsResponse,

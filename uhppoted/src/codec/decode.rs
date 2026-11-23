@@ -358,6 +358,42 @@ impl codec::Decode for GetCardResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct GetCardAtIndexResponse {
+    pub controller: u32,
+    pub card: u32,
+    pub start_date: Option<NaiveDate>,
+    pub end_date: Option<NaiveDate>,
+    pub door_1: u8,
+    pub door_2: u8,
+    pub door_3: u8,
+    pub door_4: u8,
+    #[allow(non_snake_case)]
+    pub PIN: u32,
+    pub first_card: u8,
+}
+
+impl codec::Decode for GetCardAtIndexResponse {
+    fn decode(packet: &Msg) -> Result<GetCardAtIndexResponse> {
+        validate!(packet, 0x5c);
+
+        let response = GetCardAtIndexResponse {
+            controller: unpack_uint32(packet, 4)?,
+            card: unpack_uint32(packet, 8)?,
+            start_date: unpack_optional_date(packet, 12)?,
+            end_date: unpack_optional_date(packet, 16)?,
+            door_1: unpack_uint8(packet, 20)?,
+            door_2: unpack_uint8(packet, 21)?,
+            door_3: unpack_uint8(packet, 22)?,
+            door_4: unpack_uint8(packet, 23)?,
+            PIN: unpack_uint24(packet, 24)?,
+            first_card: unpack_uint8(packet, 27)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -409,6 +445,10 @@ pub fn get_cards_response(packet: &Msg) -> Result<GetCardsResponse> {
 
 pub fn get_card_response(packet: &Msg) -> Result<GetCardResponse> {
     GetCardResponse::decode(packet)
+}
+
+pub fn get_card_at_index_response(packet: &Msg) -> Result<GetCardAtIndexResponse> {
+    GetCardAtIndexResponse::decode(packet)
 }
 
 #[macro_export]

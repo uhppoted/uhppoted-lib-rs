@@ -69,6 +69,9 @@ pub enum Commands {
 
     #[command(name = "get-card")]
     GetCard(GetCardArgs),
+
+    #[command(name = "get-card-at-index")]
+    GetCardAtIndex(GetCardAtIndexArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -290,6 +293,21 @@ pub struct GetCardArgs {
     pub card: u32,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct GetCardAtIndexArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub index: u32,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -307,6 +325,7 @@ impl Commands {
             Commands::GetStatus { .. } => "get-status",
             Commands::GetCards { .. } => "get-cards",
             Commands::GetCard { .. } => "get-card",
+            Commands::GetCardAtIndex { .. } => "get-card-at-index",
         }
     }
 
@@ -326,6 +345,7 @@ impl Commands {
             Commands::GetStatus(cmd) => cmd.handle(cfg),
             Commands::GetCards(cmd) => cmd.handle(cfg),
             Commands::GetCard(cmd) => cmd.handle(cfg),
+            Commands::GetCardAtIndex(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -344,6 +364,7 @@ impl Commands {
             "get-status",
             "get-cards",
             "get-card",
+            "get-card-at-index",
         ]
     }
 }
@@ -461,5 +482,11 @@ impl GetCardsArgs {
 impl GetCardArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_card(cfg, self.controller, self.dest, self.transport, self.card);
+    }
+}
+
+impl GetCardAtIndexArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::get_card_at_index(cfg, self.controller, self.dest, self.transport, self.index);
     }
 }

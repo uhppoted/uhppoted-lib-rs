@@ -53,3 +53,35 @@ fn get_card_not_found() {
 
     assert!(err.to_string().contains("Card not found"));
 }
+
+#[test]
+fn get_card_at_index_not_found() {
+    let stub = stub::udp();
+    let controller: u32 = 405419896;
+    let index: u32 = 136;
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Udp);
+
+    let result = uhppoted::get_card_at_index(&stub.cfg, c, index, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Card not found"));
+}
+
+#[test]
+fn get_card_at_index_deleted() {
+    let stub = stub::udp();
+    let controller: u32 = 405419896;
+    let index: u32 = 137;
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Udp);
+
+    let result = uhppoted::get_card_at_index(&stub.cfg, c, index, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Card deleted"));
+}

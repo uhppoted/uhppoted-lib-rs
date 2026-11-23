@@ -15,6 +15,7 @@ pub enum ErrorKind {
     BoundToReservedPort,
     InvalidResponse,
     CardNotFound,
+    CardDeleted,
     IO,
     Other,
 }
@@ -67,6 +68,7 @@ impl ErrorKind {
             Timeout => "Timeout waiting for response from controller",
             InvalidResponse => "Invalid response from controller",
             CardNotFound => "Card not found",
+            CardDeleted => "Card deleted",
             IO => "I/O",
             Other => "Other",
         }

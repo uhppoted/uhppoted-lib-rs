@@ -21,7 +21,7 @@ var API = []types.Function{
 	GetStatusRecord,
 	lib.GetCards,
 	lib.GetCard,
-	// lib.GetCardAtIndex,
+	lib.GetCardAtIndex,
 	// lib.PutCard,
 	// lib.DeleteCard,
 	// lib.DeleteAllCards,

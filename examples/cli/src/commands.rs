@@ -350,6 +350,31 @@ pub fn get_card(
     };
 }
 
+pub fn get_card_at_index(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+    index: u32,
+) {
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::get_card_at_index(&cfg, c, index, TIMEOUT)
+    } else {
+        uhppoted::get_card_at_index(&cfg, controller, index, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
 fn error(e: uhppoted::error::Error) {
     println!();
     println!("   *** ERROR: {e}");

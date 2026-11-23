@@ -1,4 +1,4 @@
-use std::io::ErrorKind::{Interrupted, TimedOut, WouldBlock};
+use std::io::ErrorKind::{ConnectionReset, Interrupted, TimedOut, WouldBlock};
 use std::net::{SocketAddrV4, UdpSocket};
 use std::time::{Duration, Instant};
 
@@ -75,10 +75,13 @@ pub fn broadcast(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Vec<M
 
             Ok((_, _)) => continue,
 
+            // NTS: Windows apparently fails with ConnectionReset after an ICMP port-unreachable from an earlier send
+            //      (included here although apparently mostly applies to udp::recv_from)
             Err(e) => match e.kind() {
                 WouldBlock => continue,
                 TimedOut => continue,
                 Interrupted => continue,
+                ConnectionReset => continue,
                 _ => return Err(e.into()),
             },
         }
@@ -162,10 +165,13 @@ pub fn broadcast_to(cfg: &Config, request: &Msg, timeout: Duration) -> Result<Ms
 
             Ok((_, _)) => continue,
 
+            // NTS: Windows apparently fails with ConnectionReset after an ICMP port-unreachable from an earlier send
+            //      (included here although apparently mostly applies to udp::recv_from)
             Err(e) => match e.kind() {
                 WouldBlock => continue,
                 TimedOut => continue,
                 Interrupted => continue,
+                ConnectionReset => continue,
                 _ => return Err(e.into()),
             },
         }
@@ -247,10 +253,12 @@ pub fn send_to(cfg: &Config, dest: SocketAddrV4, request: &Msg, timeout: Duratio
 
             Ok((_, _)) => continue,
 
+            // NTS: Windows apparently fails with ConnectionReset after an ICMP port-unreachable from an earlier send
             Err(e) => match e.kind() {
                 WouldBlock => continue,
                 TimedOut => continue,
                 Interrupted => continue,
+                ConnectionReset => continue,
                 _ => return Err(e.into()),
             },
         }

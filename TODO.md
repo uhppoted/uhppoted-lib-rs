@@ -12,7 +12,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] copy _remaining_ lambda to udp.rs
 - [x] copy _loop_ from _tcp.rs_
 - [x] CHANGELOG
-- [ ] NB: io::ErrorKind::ConnectionReset for TCP/UDP sendto
+- [x] io::ErrorKind::ConnectionReset for TCP/UDP sendto
 - [ ] README API summary
 - [ ] API.md
 - [ ] docstrings

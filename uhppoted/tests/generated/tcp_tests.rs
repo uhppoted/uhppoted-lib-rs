@@ -315,7 +315,7 @@ fn get_card() {
         start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
         end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
         permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
-        PIN: 7531,
+        PIN: Some(7531),
         first_card: HashMap::from([(1, false), (2, false), (3, true), (4, true)]),
     };
 
@@ -339,7 +339,7 @@ fn get_card_at_index() {
         start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
         end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
         permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
-        PIN: 7531,
+        PIN: Some(7531),
         first_card: HashMap::from([(1, true), (2, true), (3, false), (4, true)]),
     };
 

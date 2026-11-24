@@ -1,4 +1,6 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDate, NaiveDateTime};
+use regex::Regex;
+use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::time::Duration;
 
@@ -367,6 +369,64 @@ pub fn get_card_at_index(
         uhppoted::get_card_at_index(&cfg, c, index, TIMEOUT)
     } else {
         uhppoted::get_card_at_index(&cfg, controller, index, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
+pub fn put_card(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+    card: u32,
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+    doors: &str,
+    pin: Option<u32>,
+    first_card: Option<String>,
+) {
+    let mut permissions = HashMap::from([(1, 0), (2, 0), (3, 0), (4, 0)]);
+    let mut firstcard = HashMap::from([(1, false), (2, false), (3, false), (4, false)]);
+
+    let re = Regex::new(r"\b([1-4])(?::(\d+))?\b").unwrap();
+    for matches in re.captures_iter(doors) {
+        let door: u8 = matches[1].parse().unwrap();
+        let value: u8 = matches.get(2).and_then(|m| m.as_str().parse().ok()).unwrap_or(1);
+
+        permissions.insert(door, value);
+    }
+
+    if let Some(s) = &first_card {
+        let re = Regex::new(r"\b([1-4])\b").unwrap();
+        for matches in re.captures_iter(s) {
+            let door: u8 = matches[1].parse().unwrap();
+            firstcard.insert(door, true);
+        }
+    }
+
+    let _card = uhppoted::CardRecord {
+        card: card,
+        start_date: Some(start_date),
+        end_date: Some(end_date),
+        permissions: permissions,
+        PIN: pin,
+        first_card: firstcard,
+    };
+
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::put_card(&cfg, c, _card, TIMEOUT)
+    } else {
+        uhppoted::put_card(&cfg, controller, _card, TIMEOUT)
     };
 
     match response {

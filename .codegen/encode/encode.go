@@ -124,17 +124,18 @@ func args(t lib.RequestTest) []arg {
 		}
 
 		switch {
-		// 		case t.Name == "set-first-card" && a.Name == "active-mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
-		// 		case t.Name == "set-first-card" && a.Name == "inactive-mode":
-		// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
 		case a.Type == "IPv4":
 			args = append(args, arg{
 				Name:  codegen.SnakeCase(a.Name),
 				Type:  ": Ipv4Addr",
 				Value: ipv4(a.Value),
+				Comma: comma,
+			})
+
+		case a.Type == "date":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Value: date(a.Value),
 				Comma: comma,
 			})
 
@@ -151,24 +152,6 @@ func args(t lib.RequestTest) []arg {
 				Value: a.Value,
 				Comma: comma,
 			})
-
-			// 		case a.Type == "date":
-			// 			args = append(args, arg{date(a.Value), comma})
-
-			// 		case a.Type == "HHmm":
-			// 			args = append(args, arg{HHmm(a.Value), comma})
-
-			// 		case a.Type == "mode":
-			// 			args = append(args, arg{fmt.Sprintf("To_Control_Mode (%v)", a.Value), comma})
-
-			// 		case a.Type == "interlock":
-			// 			args = append(args, arg{fmt.Sprintf("To_Interlock (%v)", a.Value), comma})
-
-			// 		case a.Type == "task":
-			// 			args = append(args, arg{fmt.Sprintf("To_Task_Type (%v)", a.Value), comma})
-
-			// 		case a.Type == "anti-passback":
-			// 			args = append(args, arg{fmt.Sprintf("To_Antipassback (%v)", a.Value), comma})
 
 		case a.Type == "address:port":
 			{
@@ -201,11 +184,21 @@ func ipv4(v any) string {
 	return fmt.Sprintf(`"%v".parse().unwrap()`, addr)
 }
 
+func date(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if datetime, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid date (%v)", v))
+	} else {
+		return fmt.Sprintf(`NaiveDate::parse_from_str("%v", "%%Y-%%m-%%d").unwrap()`, datetime.Format("2006-01-02"))
+	}
+}
+
 func datetime(v any) string {
 	s := fmt.Sprintf("%v", v)
 
 	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
-		panic(fmt.Sprintf("invalid date (%v)", v))
+		panic(fmt.Sprintf("invalid date/time (%v)", v))
 	} else {
 		return fmt.Sprintf(`NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap()`, datetime.Format("2006-01-02 15:04:05"))
 	}

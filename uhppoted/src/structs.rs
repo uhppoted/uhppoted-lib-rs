@@ -70,6 +70,16 @@ pub struct CardRecord {
     pub end_date: Option<NaiveDate>,
     pub permissions: HashMap<u8, u8>,
     #[allow(non_snake_case)]
-    pub PIN: u32,
+    pub PIN: Option<u32>,
     pub first_card: HashMap<u8, bool>,
+}
+
+impl CardRecord {
+    pub fn permission(&self, door: u8) -> u8 {
+        self.permissions.get(&door).copied().unwrap_or(0)
+    }
+
+    pub fn first_card(&self, door: u8) -> bool {
+        self.first_card.get(&door).copied().unwrap_or(false)
+    }
 }

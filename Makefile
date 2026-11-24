@@ -15,8 +15,13 @@ DOOR ?= 3
 MODE ?= 2
 DELAY ?= 11
 PASSCODES ?= 12345,54321,987654
-CARD ?= 10058400
 CARD_INDEX ?= 3
+CARD ?= 10058400
+START_DATE ?= 2026-01-01
+END_DATE ?= 2026-12-31
+DOORS ?= 1,2,4:29
+PIN ?= 7531
+FIRSTCARD ?= 1,3
 
 clean:
 	cargo clean
@@ -118,3 +123,6 @@ get-card: build
 
 get-card-at-index: build
 	$(CLI) get-card-at-index --controller $(CONTROLLER) --index $(CARD_INDEX)
+
+put-card: build
+	$(CLI) put-card --controller $(CONTROLLER) --card $(CARD) --start-date $(START_DATE) --end-date $(END_DATE) --doors $(DOORS) --pin $(PIN) --firstcard $(FIRSTCARD)

@@ -1,4 +1,4 @@
-use chrono::Local;
+use chrono::{Local, NaiveDate};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
 use clap::{Parser, Subcommand};
@@ -72,6 +72,9 @@ pub enum Commands {
 
     #[command(name = "get-card-at-index")]
     GetCardAtIndex(GetCardAtIndexArgs),
+
+    #[command(name = "put-card")]
+    PutCard(PutCardArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -308,6 +311,36 @@ pub struct GetCardAtIndexArgs {
     pub index: u32,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct PutCardArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub card: u32,
+
+    #[arg(long)]
+    pub start_date: NaiveDate,
+
+    #[arg(long)]
+    pub end_date: NaiveDate,
+
+    #[arg(long)]
+    pub doors: String,
+
+    #[arg(long)]
+    pub pin: Option<u32>,
+
+    #[arg(long)]
+    pub firstcard: Option<String>,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -326,6 +359,7 @@ impl Commands {
             Commands::GetCards { .. } => "get-cards",
             Commands::GetCard { .. } => "get-card",
             Commands::GetCardAtIndex { .. } => "get-card-at-index",
+            Commands::PutCard { .. } => "put-card",
         }
     }
 
@@ -346,6 +380,7 @@ impl Commands {
             Commands::GetCards(cmd) => cmd.handle(cfg),
             Commands::GetCard(cmd) => cmd.handle(cfg),
             Commands::GetCardAtIndex(cmd) => cmd.handle(cfg),
+            Commands::PutCard(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -365,6 +400,7 @@ impl Commands {
             "get-cards",
             "get-card",
             "get-card-at-index",
+            "put-card",
         ]
     }
 }
@@ -488,5 +524,22 @@ impl GetCardArgs {
 impl GetCardAtIndexArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::get_card_at_index(cfg, self.controller, self.dest, self.transport, self.index);
+    }
+}
+
+impl PutCardArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::put_card(
+            cfg,
+            self.controller,
+            self.dest,
+            self.transport,
+            self.card,
+            self.start_date,
+            self.end_date,
+            self.doors.as_str(),
+            self.pin,
+            self.firstcard.clone(),
+        );
     }
 }

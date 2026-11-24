@@ -323,6 +323,13 @@ func args(t lib.FuncTest) []arg {
 				})
 			}
 
+		case a.Type == "date":
+			args = append(args, arg{
+				Name:  codegen.SnakeCase(a.Name),
+				Type:  ": NaiveDate",
+				Value: date(a.Value),
+			})
+
 		case a.Type == "datetime":
 			args = append(args, arg{
 				Name:  codegen.SnakeCase(a.Name),
@@ -532,7 +539,7 @@ func expected(f lib.Function, t lib.FuncTest) any {
 			StartDate:   api.ParseOptionalDate((lookup(reply, "start-date").(string))),
 			EndDate:     api.ParseOptionalDate((lookup(reply, "end-date").(string))),
 			Permissions: permissions,
-			PIN:         uint32(lookup(reply, "PIN").(int)),
+			PIN:         fmt.Sprintf("Some(%v)", lookup(reply, "PIN").(int)),
 			FirstCard:   firstcard,
 		}
 	}
@@ -559,14 +566,16 @@ func expected(f lib.Function, t lib.FuncTest) any {
 			StartDate:   api.ParseOptionalDate((lookup(reply, "start-date").(string))),
 			EndDate:     api.ParseOptionalDate((lookup(reply, "end-date").(string))),
 			Permissions: permissions,
-			PIN:         uint32(lookup(reply, "PIN").(int)),
+			PIN:         fmt.Sprintf("Some(%v)", lookup(reply, "PIN").(int)),
 			FirstCard:   firstcard,
 		}
 	}
 
-	fmt.Println(">>>> OOOPS:", f.Name)
+	if f.Name == "put card" {
+		return lookup(t.Replies[0], "ok").(bool)
+	}
 
-	return "???"
+	panic(fmt.Sprintf(">>>> OOOPS: %v", f.Name))
 }
 
 func val(v lib.Value) value {
@@ -604,11 +613,21 @@ func ipv4(v any) string {
 	return fmt.Sprintf(`"%v".parse().unwrap()`, addr)
 }
 
+func date(v any) string {
+	s := fmt.Sprintf("%v", v)
+
+	if datetime, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid date (%v)", v))
+	} else {
+		return fmt.Sprintf(`"%v".parse().unwrap()`, datetime.Format("2006-01-02"))
+	}
+}
+
 func datetime(v any) string {
 	s := fmt.Sprintf("%v", v)
 
 	if datetime, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err != nil {
-		panic(fmt.Sprintf("invalid date (%v)", v))
+		panic(fmt.Sprintf("invalid date/time (%v)", v))
 	} else {
 		return fmt.Sprintf(`"%v".parse().unwrap()`, datetime.Format("2006-01-02T15:04:05"))
 	}

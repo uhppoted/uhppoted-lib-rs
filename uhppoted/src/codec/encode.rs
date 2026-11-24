@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDate, NaiveDateTime};
 use std::net::{Ipv4Addr, SocketAddrV4};
 
 use super::Msg;
@@ -241,6 +241,38 @@ pub fn get_card_at_index_request(controller: u32, index: u32) -> Result<Msg> {
     Ok(packet)
 }
 
+#[allow(non_snake_case)]
+pub fn put_card_request(
+    controller: u32,
+    card: u32,
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+    door1: u8,
+    door2: u8,
+    door3: u8,
+    door4: u8,
+    PIN: u32,
+    firstcard: u8,
+) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x50;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_uint32(card, &mut packet, 8)?;
+    pack_date(start_date, &mut packet, 12)?;
+    pack_date(end_date, &mut packet, 16)?;
+    pack_uint8(door1, &mut packet, 20)?;
+    pack_uint8(door2, &mut packet, 21)?;
+    pack_uint8(door3, &mut packet, 22)?;
+    pack_uint8(door4, &mut packet, 23)?;
+    pack_uint24(PIN, &mut packet, 24)?;
+    pack_uint8(firstcard, &mut packet, 27)?;
+
+    Ok(packet)
+}
+
 fn pack_uint8(v: u8, packet: &mut Msg, offset: usize) -> Result<()> {
     packet[offset] = v;
     Ok(())
@@ -250,6 +282,16 @@ fn pack_uint16(v: u16, packet: &mut Msg, offset: usize) -> Result<()> {
     let bytes = v.to_le_bytes();
 
     packet[offset..offset + 2].clone_from_slice(&bytes);
+    Ok(())
+}
+
+fn pack_uint24(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
+    let bytes = v.to_le_bytes();
+
+    packet[offset + 0] = bytes[0];
+    packet[offset + 1] = bytes[1];
+    packet[offset + 2] = bytes[2];
+
     Ok(())
 }
 
@@ -265,6 +307,14 @@ fn pack_IPv4(v: Ipv4Addr, packet: &mut Msg, offset: usize) -> Result<()> {
     let addr = v.octets();
 
     packet[offset..offset + 4].clone_from_slice(&addr);
+    Ok(())
+}
+
+fn pack_date(v: NaiveDate, packet: &mut Msg, offset: usize) -> Result<()> {
+    let s = v.format("%Y%m%d");
+    let bcd = string2bcd!(s.to_string(), 4);
+
+    packet[offset..offset + 4].clone_from_slice(&bcd);
     Ok(())
 }
 

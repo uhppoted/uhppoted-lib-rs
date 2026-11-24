@@ -9,5 +9,6 @@ chrono = "0.4.45"
 clap = { version = "4.6.7", features = ["derive"] }
 env_logger = "0.11.11"
 log = "0.4.34"
+regex = "1.13.2"
 uhppoted = { path = "../../uhppoted" }
 

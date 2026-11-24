@@ -11,6 +11,8 @@ pub enum ErrorKind {
     _NoResponse,
     Timeout,
     InvalidAddress,
+    InvalidStartDate,
+    InvalidEndDate,
     BindToReservedPort,
     BoundToReservedPort,
     InvalidResponse,
@@ -62,6 +64,8 @@ impl ErrorKind {
         use ErrorKind::*;
         match *self {
             InvalidAddress => "Invalid IPv4 address",
+            InvalidStartDate => "Invalid start date",
+            InvalidEndDate => "Invalid end date",
             BindToReservedPort => "Bind address:port reserved for broadcast",
             BoundToReservedPort => "Bound address:port reserved for broadcast",
             _NoResponse => "No response to request",

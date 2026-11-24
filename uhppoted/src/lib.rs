@@ -522,6 +522,8 @@ pub fn get_card<T: controller::ControllerRef>(
         return Err(error::ErrorKind::CardNotFound.into());
     }
 
+    let pin: Option<u32> = (response.PIN != 0).then_some(response.PIN);
+
     Ok(CardRecord {
         card: response.card,
         start_date: response.start_date,
@@ -532,7 +534,7 @@ pub fn get_card<T: controller::ControllerRef>(
             (3, response.door_3),
             (4, response.door_4),
         ]),
-        PIN: response.PIN,
+        PIN: pin,
         first_card: HashMap::from([
             (1, response.first_card & 0x01 == 0x01),
             (2, response.first_card & 0x02 == 0x02),
@@ -576,6 +578,8 @@ pub fn get_card_at_index<T: controller::ControllerRef>(
         return Err(error::ErrorKind::CardDeleted.into());
     }
 
+    let pin: Option<u32> = (response.PIN != 0).then_some(response.PIN);
+
     Ok(CardRecord {
         card: response.card,
         start_date: response.start_date,
@@ -586,7 +590,7 @@ pub fn get_card_at_index<T: controller::ControllerRef>(
             (3, response.door_3),
             (4, response.door_4),
         ]),
-        PIN: response.PIN,
+        PIN: pin,
         first_card: HashMap::from([
             (1, response.first_card & 0x01 == 0x01),
             (2, response.first_card & 0x02 == 0x02),
@@ -594,4 +598,62 @@ pub fn get_card_at_index<T: controller::ControllerRef>(
             (4, response.first_card & 0x08 == 0x08),
         ]),
     })
+}
+
+pub fn put_card<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    card: CardRecord,
+    timeout: Duration,
+) -> Result<bool> {
+    let id = controller.id();
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    let mut firstcard: u8 = 0;
+
+    if card.first_card(1) {
+        firstcard |= 0x01;
+    }
+
+    if card.first_card(2) {
+        firstcard |= 0x02;
+    }
+
+    if card.first_card(3) {
+        firstcard |= 0x04;
+    }
+
+    if card.first_card(4) {
+        firstcard |= 0x08;
+    }
+
+    let request = encode::put_card_request(
+        id,
+        card.card,
+        card.start_date.ok_or(error::ErrorKind::InvalidStartDate)?,
+        card.end_date.ok_or(error::ErrorKind::InvalidEndDate)?,
+        card.permission(1),
+        card.permission(2),
+        card.permission(3),
+        card.permission(4),
+        card.PIN.unwrap_or(0),
+        firstcard,
+    )?;
+
+    let reply = match dest {
+        Some(addr) => match transport {
+            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
+            _ => udp::send_to(cfg, addr, &request, timeout)?,
+        },
+        None => udp::broadcast_to(cfg, &request, timeout)?,
+    };
+
+    let response = decode::put_card_response(&reply)?;
+
+    if response.controller != id {
+        return Err(error::ErrorKind::InvalidResponse.into());
+    }
+
+    Ok(response.ok)
 }

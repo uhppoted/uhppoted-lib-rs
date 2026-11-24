@@ -35,7 +35,7 @@ type CardRecord struct {
 	StartDate   time.Time
 	EndDate     time.Time
 	Permissions map[uint8]uint8
-	PIN         uint32
+	PIN         string
 	FirstCard   map[uint8]bool
 }
 

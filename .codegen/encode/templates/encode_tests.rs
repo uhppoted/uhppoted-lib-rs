@@ -8,6 +8,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
             {{ $bytes }}{{ end }}
         ];
         {{ range $arg := .Args }}
+        {{ if eq $arg.Name "PIN"}}#[allow(non_snake_case)]{{ end -}}
         let {{ $arg.Name }}{{ $arg.Type }} = {{ $arg.Value }};{{ end }}
 
         let result = {{ .Function }}({{- range $arg := .Args }}{{ $arg.Name }}{{ $arg.Comma }}{{ end }}).unwrap();

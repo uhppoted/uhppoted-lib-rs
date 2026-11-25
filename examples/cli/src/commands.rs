@@ -409,10 +409,10 @@ pub fn put_card(
     }
 
     let _card = uhppoted::CardRecord {
-        card: card,
-        start_date: Some(start_date),
-        end_date: Some(end_date),
-        permissions: permissions,
+        card,
+        start_date,
+        end_date,
+        permissions,
         PIN: pin,
         first_card: firstcard,
     };

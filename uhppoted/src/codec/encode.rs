@@ -288,7 +288,7 @@ fn pack_uint16(v: u16, packet: &mut Msg, offset: usize) -> Result<()> {
 fn pack_uint24(v: u32, packet: &mut Msg, offset: usize) -> Result<()> {
     let bytes = v.to_le_bytes();
 
-    packet[offset + 0] = bytes[0];
+    packet[offset] = bytes[0];
     packet[offset + 1] = bytes[1];
     packet[offset + 2] = bytes[2];
 

@@ -73,19 +73,8 @@ pub fn get_controller<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<ControllerRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_controller_request(id)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_controller_response(&reply)?;
 
     if response.controller != id {
@@ -113,19 +102,8 @@ pub fn set_IPv4<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<bool> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::set_IPv4_request(id, address, netmask, gateway)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_IPv4_response(&reply)?;
 
     if response.controller != id {
@@ -137,19 +115,8 @@ pub fn set_IPv4<T: controller::ControllerRef>(
 
 pub fn get_time<T: controller::ControllerRef>(cfg: &Config, controller: T, timeout: Duration) -> Result<NaiveDateTime> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_time_request(id)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_time_response(&reply)?;
 
     if response.controller != id {
@@ -166,19 +133,8 @@ pub fn set_time<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<NaiveDateTime> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::set_time_request(id, datetime)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_time_response(&reply)?;
 
     if response.controller != id {
@@ -194,19 +150,8 @@ pub fn get_listener<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<ListenerRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_listener_request(id)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_listener_response(&reply)?;
 
     if response.controller != id {
@@ -227,22 +172,8 @@ pub fn set_listener<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<bool> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
-    let request = match interval {
-        Some(v) => encode::set_listener_request(id, address, v)?,
-        _ => encode::set_listener_request(id, address, 0)?,
-    };
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let request = encode::set_listener_request(id, address, interval.unwrap_or(0))?;
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_listener_response(&reply)?;
 
     if response.controller != id {
@@ -259,19 +190,8 @@ pub fn get_door<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<DoorRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_door_request(id, door)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_door_response(&reply)?;
 
     if response.controller != id || response.door != door {
@@ -294,19 +214,8 @@ pub fn set_door<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<DoorRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::set_door_request(id, door, mode, delay)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_door_response(&reply)?;
 
     if response.controller != id || response.door != door {
@@ -328,8 +237,6 @@ pub fn set_door_passcodes<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<bool> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
 
     let mut it = passcodes.into_iter().filter(|p| (1..=999_999).contains(p));
 
@@ -339,15 +246,7 @@ pub fn set_door_passcodes<T: controller::ControllerRef>(
     let passcode4 = it.next().unwrap_or(0);
 
     let request = encode::set_door_passcodes_request(id, door, passcode1, passcode2, passcode3, passcode4)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_door_passcodes_response(&reply)?;
 
     if response.controller != id {
@@ -364,19 +263,8 @@ pub fn open_door<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<bool> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::open_door_request(id, door)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::open_door_response(&reply)?;
 
     if response.controller != id {
@@ -392,19 +280,8 @@ pub fn get_status<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<StatusRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_status_request(id)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_status_response(&reply)?;
 
     if response.controller != id {
@@ -466,19 +343,8 @@ pub fn get_status<T: controller::ControllerRef>(
 
 pub fn get_cards<T: controller::ControllerRef>(cfg: &Config, controller: T, timeout: Duration) -> Result<u32> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_cards_request(id)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_cards_response(&reply)?;
 
     if response.controller != id {
@@ -495,19 +361,8 @@ pub fn get_card<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<CardRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_card_request(id, card)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_card_response(&reply)?;
 
     if response.controller != id {
@@ -522,12 +377,14 @@ pub fn get_card<T: controller::ControllerRef>(
         return Err(error::ErrorKind::CardNotFound.into());
     }
 
+    let start_date = response.start_date.ok_or(error::ErrorKind::InvalidStartDate)?;
+    let end_date = response.end_date.ok_or(error::ErrorKind::InvalidEndDate)?;
     let pin: Option<u32> = (response.PIN != 0).then_some(response.PIN);
 
     Ok(CardRecord {
         card: response.card,
-        start_date: response.start_date,
-        end_date: response.end_date,
+        start_date,
+        end_date,
         permissions: HashMap::from([
             (1, response.door_1),
             (2, response.door_2),
@@ -551,19 +408,8 @@ pub fn get_card_at_index<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<CardRecord> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let request = encode::get_card_at_index_request(id, index)?;
-
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_card_at_index_response(&reply)?;
 
     if response.controller != id {
@@ -578,12 +424,14 @@ pub fn get_card_at_index<T: controller::ControllerRef>(
         return Err(error::ErrorKind::CardDeleted.into());
     }
 
+    let start_date = response.start_date.ok_or(error::ErrorKind::InvalidStartDate)?;
+    let end_date = response.end_date.ok_or(error::ErrorKind::InvalidEndDate)?;
     let pin: Option<u32> = (response.PIN != 0).then_some(response.PIN);
 
     Ok(CardRecord {
         card: response.card,
-        start_date: response.start_date,
-        end_date: response.end_date,
+        start_date,
+        end_date,
         permissions: HashMap::from([
             (1, response.door_1),
             (2, response.door_2),
@@ -607,9 +455,6 @@ pub fn put_card<T: controller::ControllerRef>(
     timeout: Duration,
 ) -> Result<bool> {
     let id = controller.id();
-    let dest = controller.dest();
-    let transport = controller.transport();
-
     let mut firstcard: u8 = 0;
 
     if card.first_card(1) {
@@ -631,8 +476,8 @@ pub fn put_card<T: controller::ControllerRef>(
     let request = encode::put_card_request(
         id,
         card.card,
-        card.start_date.ok_or(error::ErrorKind::InvalidStartDate)?,
-        card.end_date.ok_or(error::ErrorKind::InvalidEndDate)?,
+        card.start_date,
+        card.end_date,
         card.permission(1),
         card.permission(2),
         card.permission(3),
@@ -641,14 +486,7 @@ pub fn put_card<T: controller::ControllerRef>(
         firstcard,
     )?;
 
-    let reply = match dest {
-        Some(addr) => match transport {
-            Some(controller::Transport::Tcp) => tcp::send_to(cfg, addr, &request, timeout)?,
-            _ => udp::send_to(cfg, addr, &request, timeout)?,
-        },
-        None => udp::broadcast_to(cfg, &request, timeout)?,
-    };
-
+    let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::put_card_response(&reply)?;
 
     if response.controller != id {
@@ -656,4 +494,15 @@ pub fn put_card<T: controller::ControllerRef>(
     }
 
     Ok(response.ok)
+}
+
+fn exec<T: controller::ControllerRef>(cfg: &Config, controller: T, request: Msg, timeout: Duration) -> Result<Msg> {
+    let dest = controller.dest();
+    let transport = controller.transport();
+
+    match (dest, transport) {
+        (Some(addr), Some(controller::Transport::Tcp)) => tcp::send_to(cfg, addr, &request, timeout),
+        (Some(addr), _) => udp::send_to(cfg, addr, &request, timeout),
+        (None, _) => udp::broadcast_to(cfg, &request, timeout),
+    }
 }

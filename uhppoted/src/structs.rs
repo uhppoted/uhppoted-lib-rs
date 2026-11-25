@@ -66,8 +66,8 @@ pub struct DoorRecord {
 #[derive(Clone, Debug, PartialEq)]
 pub struct CardRecord {
     pub card: u32,
-    pub start_date: Option<NaiveDate>,
-    pub end_date: Option<NaiveDate>,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
     pub permissions: HashMap<u8, u8>,
     #[allow(non_snake_case)]
     pub PIN: Option<u32>,

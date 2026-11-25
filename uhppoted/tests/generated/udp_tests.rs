@@ -312,8 +312,8 @@ fn get_card() {
 
     let expected = CardRecord {
         card: 10058400,
-        start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
-        end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
+        start_date: NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap(),
+        end_date: NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap(),
         permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
         PIN: Some(7531),
         first_card: HashMap::from([(1, false), (2, false), (3, true), (4, true)]),
@@ -336,8 +336,8 @@ fn get_card_at_index() {
 
     let expected = CardRecord {
         card: 10058400,
-        start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
-        end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
+        start_date: NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap(),
+        end_date: NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap(),
         permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
         PIN: Some(7531),
         first_card: HashMap::from([(1, true), (2, true), (3, false), (4, true)]),
@@ -363,8 +363,8 @@ fn put_card() {
     let controller: u32 = 405419896;
     let card = CardRecord {
         card: 10058400,
-        start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
-        end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
+        start_date: NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap(),
+        end_date: NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap(),
         permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
         PIN: Some(999999),
         first_card: HashMap::from([(1, false), (2, false), (3, true), (4, true)]),

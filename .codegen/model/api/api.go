@@ -134,12 +134,12 @@ func (v DoorRecord) String() string {
 func (v CardRecord) String() string {
 	var b strings.Builder
 
-	startDate := fmt.Sprintf("Some(NaiveDate::parse_from_str(\"%v\", \"%%Y-%%m-%%d\").unwrap())", v.StartDate.Format("2006-01-02"))
+	startDate := fmt.Sprintf("NaiveDate::parse_from_str(\"%v\", \"%%Y-%%m-%%d\").unwrap()", v.StartDate.Format("2006-01-02"))
 	if v.StartDate.IsZero() {
 		startDate = "None"
 	}
 
-	endDate := fmt.Sprintf("Some(NaiveDate::parse_from_str(\"%v\", \"%%Y-%%m-%%d\").unwrap())", v.EndDate.Format("2006-01-02"))
+	endDate := fmt.Sprintf("NaiveDate::parse_from_str(\"%v\", \"%%Y-%%m-%%d\").unwrap()", v.EndDate.Format("2006-01-02"))
 	if v.EndDate.IsZero() {
 		endDate = "None"
 	}

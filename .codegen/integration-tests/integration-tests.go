@@ -278,6 +278,51 @@ func args(t lib.FuncTest) []arg {
 	args := []arg{}
 	passcodes := []string{}
 
+	lookup := func(key string) any {
+		for _, a := range t.Args {
+			if a.Name == key {
+				return a.Value
+			}
+		}
+
+		panic(fmt.Sprintf("missing expected value '%v", key))
+	}
+
+	if t.Name == "put-card" {
+		args = append(args, arg{
+			Name:  "controller",
+			Type:  ": u32",
+			Value: lookup("controller"),
+		})
+
+		card := api.CardRecord{
+			Card:      lookup("card").(uint32),
+			StartDate: toDate(lookup("start date").(string)),
+			EndDate:   toDate(lookup("end date").(string)),
+			Permissions: map[uint8]uint8{
+				1: lookup("door 1").(uint8),
+				2: lookup("door 2").(uint8),
+				3: lookup("door 3").(uint8),
+				4: lookup("door 4").(uint8),
+			},
+			PIN: fmt.Sprintf("Some(%v)", lookup("PIN")),
+			FirstCard: map[uint8]bool{
+				1: lookup("first card").(uint8)&0x01 == 0x01,
+				2: lookup("first card").(uint8)&0x02 == 0x02,
+				3: lookup("first card").(uint8)&0x04 == 0x04,
+				4: lookup("first card").(uint8)&0x08 == 0x08,
+			},
+		}
+
+		args = append(args, arg{
+			Name:  "card",
+			Type:  "",
+			Value: card,
+		})
+
+		return args
+	}
+
 	for _, a := range t.Args {
 		switch {
 		case t.Name == "set-listener-addr-port" && a.Name == "interval":
@@ -616,10 +661,10 @@ func ipv4(v any) string {
 func date(v any) string {
 	s := fmt.Sprintf("%v", v)
 
-	if datetime, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
+	if date, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
 		panic(fmt.Sprintf("invalid date (%v)", v))
 	} else {
-		return fmt.Sprintf(`"%v".parse().unwrap()`, datetime.Format("2006-01-02"))
+		return fmt.Sprintf(`"%v".parse().unwrap()`, date.Format("2006-01-02"))
 	}
 }
 
@@ -640,5 +685,15 @@ func optional_timestamp(v any) string {
 		return "None"
 	} else {
 		return fmt.Sprintf(`Some(NaiveDateTime::parse_from_str("%v", "%%Y-%%m-%%d %%H:%%M:%%S").unwrap())`, datetime.Format("2006-01-02 15:04:05"))
+	}
+}
+
+func toDate(v any) time.Time {
+	s := fmt.Sprintf("%v", v)
+
+	if date, err := time.ParseInLocation("2006-01-02", s, time.Local); err != nil {
+		panic(fmt.Sprintf("invalid date (%v)", v))
+	} else {
+		return date
 	}
 }

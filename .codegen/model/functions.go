@@ -22,7 +22,7 @@ var API = []types.Function{
 	lib.GetCards,
 	lib.GetCard,
 	lib.GetCardAtIndex,
-	// lib.PutCard,
+	lib.PutCard,
 	// lib.DeleteCard,
 	// lib.DeleteAllCards,
 	// lib.GetEvent,

@@ -355,6 +355,30 @@ fn get_card_at_index() {
 }
 
 #[test]
+fn put_card() {
+    let stub = stub::udp();
+
+    let expected = true;
+
+    let controller: u32 = 405419896;
+    let card = CardRecord {
+        card: 10058400,
+        start_date: Some(NaiveDate::parse_from_str("2025-01-01", "%Y-%m-%d").unwrap()),
+        end_date: Some(NaiveDate::parse_from_str("2025-12-31", "%Y-%m-%d").unwrap()),
+        permissions: HashMap::from([(1, 1), (2, 0), (3, 17), (4, 1)]),
+        PIN: Some(999999),
+        first_card: HashMap::from([(1, false), (2, false), (3, true), (4, true)]),
+    };
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Udp);
+    let result = uhppoted::put_card(&stub.cfg, c, card, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn get_card_not_found() {
     let stub = stub::udp();
     let controller: u32 = 405419896;

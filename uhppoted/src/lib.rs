@@ -44,6 +44,14 @@ pub type Doors = structs::Doors;
 pub type Alarms = structs::Alarms;
 pub type Event = structs::Event;
 
+macro_rules! validate {
+    ($controller:expr, $id: expr) => {
+        if $controller != $id {
+            return Err(error::ErrorKind::InvalidResponse.into());
+        }
+    };
+}
+
 pub fn find_controllers(cfg: &Config, timeout: Duration) -> Result<Vec<ControllerRecord>> {
     let request = encode::get_controller_request(0)?;
 
@@ -77,9 +85,7 @@ pub fn get_controller<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_controller_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(ControllerRecord {
         controller: response.controller,
@@ -106,9 +112,7 @@ pub fn set_IPv4<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_IPv4_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.ok)
 }
@@ -119,9 +123,7 @@ pub fn get_time<T: controller::ControllerRef>(cfg: &Config, controller: T, timeo
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_time_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.date_time)
 }
@@ -137,9 +139,7 @@ pub fn set_time<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_time_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.date_time)
 }
@@ -154,9 +154,7 @@ pub fn get_listener<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_listener_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(ListenerRecord {
         address: SocketAddrV4::new(response.address, response.port),
@@ -176,9 +174,7 @@ pub fn set_listener<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_listener_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.ok)
 }
@@ -194,7 +190,8 @@ pub fn get_door<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_door_response(&reply)?;
 
-    if response.controller != id || response.door != door {
+    validate!(response.controller, id);
+    if response.door != door {
         return Err(error::ErrorKind::InvalidResponse.into());
     }
 
@@ -218,7 +215,8 @@ pub fn set_door<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_door_response(&reply)?;
 
-    if response.controller != id || response.door != door {
+    validate!(response.controller, id);
+    if response.door != door {
         return Err(error::ErrorKind::InvalidResponse.into());
     }
 
@@ -249,9 +247,7 @@ pub fn set_door_passcodes<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::set_door_passcodes_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.ok)
 }
@@ -267,9 +263,7 @@ pub fn open_door<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::open_door_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.ok)
 }
@@ -284,9 +278,7 @@ pub fn get_status<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_status_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     let event = if response.event_index > 0 {
         Some(Event {
@@ -347,9 +339,7 @@ pub fn get_cards<T: controller::ControllerRef>(cfg: &Config, controller: T, time
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_cards_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.cards)
 }
@@ -365,9 +355,7 @@ pub fn get_card<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_card_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     if response.card != card && response.card != 0 {
         return Err(error::ErrorKind::InvalidResponse.into());
@@ -412,9 +400,7 @@ pub fn get_card_at_index<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::get_card_at_index_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     if response.card == 0 {
         return Err(error::ErrorKind::CardNotFound.into());
@@ -489,9 +475,7 @@ pub fn put_card<T: controller::ControllerRef>(
     let reply = exec(cfg, controller, request, timeout)?;
     let response = decode::put_card_response(&reply)?;
 
-    if response.controller != id {
-        return Err(error::ErrorKind::InvalidResponse.into());
-    }
+    validate!(response.controller, id);
 
     Ok(response.ok)
 }

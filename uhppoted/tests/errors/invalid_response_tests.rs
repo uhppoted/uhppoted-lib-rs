@@ -12,6 +12,17 @@ const TCP: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 60003);
 
 #[test]
 #[allow(non_snake_case)]
+fn broadcast_incorrect_controller() {
+    let stub = stub::broadcast();
+    let controller: u32 = 605040302;
+    let result = uhppoted::get_controller(&stub.cfg, controller, TIMEOUT);
+    let err = result.as_ref().unwrap_err();
+
+    assert!(err.to_string().contains("Invalid response from controller"));
+}
+
+#[test]
+#[allow(non_snake_case)]
 fn broadcast_invalid_SOM() {
     let stub = stub::broadcast();
     let controller: u32 = 201020304;

@@ -29,6 +29,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - [x] timeouts
     - [x] invalid SOM
     - [x] invalid opcode
+    - [x] incorrect controller
     - [x] set TIMEOUT to 500
     - [ ] listen
 
@@ -36,6 +37,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
     - replace args.comma with 'join'
     - decode: invalid SOM unit tests
     - decode: invalid opcode unit tests
+    - get-listener-address:port
 
 - [ ] event types enum
 - [ ] event reasons enum
@@ -57,8 +59,8 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [x] get-cards
 - [x] get-card
 - [x] get-card-at-index
-- [ ] put-card
-- [ ] delete-card
+- [x] put-card
+- [x] delete-card
 - [ ] delete-all-cards
 - [ ] get-event
 - [ ] get-event-index

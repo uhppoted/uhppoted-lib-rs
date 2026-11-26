@@ -75,6 +75,9 @@ pub enum Commands {
 
     #[command(name = "put-card")]
     PutCard(PutCardArgs),
+
+    #[command(name = "delete-card")]
+    DeleteCard(DeleteCardArgs),
 }
 
 #[derive(clap::Args, Debug, Clone, Copy)]
@@ -341,6 +344,21 @@ pub struct PutCardArgs {
     pub firstcard: Option<String>,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct DeleteCardArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
+    #[command(flatten)]
+    pub transport: TransportArgs,
+
+    #[arg(long)]
+    pub card: u32,
+}
+
 impl Commands {
     pub fn name(&self) -> &'static str {
         match self {
@@ -360,6 +378,7 @@ impl Commands {
             Commands::GetCard { .. } => "get-card",
             Commands::GetCardAtIndex { .. } => "get-card-at-index",
             Commands::PutCard { .. } => "put-card",
+            Commands::DeleteCard { .. } => "delete-card",
         }
     }
 
@@ -381,6 +400,7 @@ impl Commands {
             Commands::GetCard(cmd) => cmd.handle(cfg),
             Commands::GetCardAtIndex(cmd) => cmd.handle(cfg),
             Commands::PutCard(cmd) => cmd.handle(cfg),
+            Commands::DeleteCard(cmd) => cmd.handle(cfg),
         }
     }
 
@@ -541,5 +561,11 @@ impl PutCardArgs {
             self.pin,
             self.firstcard.clone(),
         );
+    }
+}
+
+impl DeleteCardArgs {
+    pub fn handle(&self, cfg: uhppoted::Config) {
+        commands::delete_card(cfg, self.controller, self.dest, self.transport, self.card);
     }
 }

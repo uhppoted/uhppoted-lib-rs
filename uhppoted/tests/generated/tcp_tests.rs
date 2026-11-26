@@ -379,6 +379,23 @@ fn put_card() {
 }
 
 #[test]
+fn delete_card() {
+    let stub = stub::tcp();
+
+    let expected = true;
+
+    let controller: u32 = 405419896;
+    let card: u32 = 10058400;
+
+    let c = Controller::new(controller)
+        .with_address(DEST)
+        .with_transport(Transport::Tcp);
+    let result = uhppoted::delete_card(&stub.cfg, c, card, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn get_card_not_found() {
     let stub = stub::tcp();
     let controller: u32 = 405419896;

@@ -620,6 +620,10 @@ func expected(f lib.Function, t lib.FuncTest) any {
 		return lookup(t.Replies[0], "ok").(bool)
 	}
 
+	if f.Name == "delete card" {
+		return lookup(t.Replies[0], "ok").(bool)
+	}
+
 	panic(fmt.Sprintf(">>>> OOOPS: %v", f.Name))
 }
 

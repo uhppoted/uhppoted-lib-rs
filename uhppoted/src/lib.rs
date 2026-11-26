@@ -480,6 +480,22 @@ pub fn put_card<T: controller::ControllerRef>(
     Ok(response.ok)
 }
 
+pub fn delete_card<T: controller::ControllerRef>(
+    cfg: &Config,
+    controller: T,
+    card: u32,
+    timeout: Duration,
+) -> Result<bool> {
+    let id = controller.id();
+    let request = encode::delete_card_request(id, card)?;
+    let reply = exec(cfg, controller, request, timeout)?;
+    let response = decode::delete_card_response(&reply)?;
+
+    validate!(response.controller, id);
+
+    Ok(response.ok)
+}
+
 fn exec<T: controller::ControllerRef>(cfg: &Config, controller: T, request: Msg, timeout: Duration) -> Result<Msg> {
     let dest = controller.dest();
     let transport = controller.transport();

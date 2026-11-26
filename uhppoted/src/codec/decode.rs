@@ -413,6 +413,25 @@ impl codec::Decode for PutCardResponse {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct DeleteCardResponse {
+    pub controller: u32,
+    pub ok: bool,
+}
+
+impl codec::Decode for DeleteCardResponse {
+    fn decode(packet: &Msg) -> Result<DeleteCardResponse> {
+        validate!(packet, 0x52);
+
+        let response = DeleteCardResponse {
+            controller: unpack_uint32(packet, 4)?,
+            ok: unpack_bool(packet, 8)?,
+        };
+
+        Ok(response)
+    }
+}
+
 pub fn get_controller_response(packet: &Msg) -> Result<GetControllerResponse> {
     GetControllerResponse::decode(packet)
 }
@@ -472,6 +491,10 @@ pub fn get_card_at_index_response(packet: &Msg) -> Result<GetCardAtIndexResponse
 
 pub fn put_card_response(packet: &Msg) -> Result<PutCardResponse> {
     PutCardResponse::decode(packet)
+}
+
+pub fn delete_card_response(packet: &Msg) -> Result<DeleteCardResponse> {
+    DeleteCardResponse::decode(packet)
 }
 
 #[macro_export]

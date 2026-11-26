@@ -24,7 +24,7 @@ var Responses = []types.Response{
 	lib.GetCardResponse,
 	lib.GetCardAtIndexResponse,
 	lib.PutCardResponse,
-	// lib.DeleteCardResponse,
+	lib.DeleteCardResponse,
 	// lib.DeleteAllCardsResponse,
 	// lib.GetEventResponse,
 	// lib.GetEventIndexResponse,

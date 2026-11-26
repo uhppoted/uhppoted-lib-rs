@@ -367,6 +367,20 @@ fn put_card() {
 }
 
 #[test]
+fn delete_card() {
+    let stub = stub::broadcast();
+
+    let expected = true;
+
+    let controller: u32 = 405419896;
+    let card: u32 = 10058400;
+
+    let result = uhppoted::delete_card(&stub.cfg, controller, card, TIMEOUT).unwrap();
+
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn get_card_not_found() {
     let stub = stub::broadcast();
     let controller: u32 = 405419896;

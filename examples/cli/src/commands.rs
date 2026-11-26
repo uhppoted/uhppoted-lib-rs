@@ -435,6 +435,31 @@ pub fn put_card(
     };
 }
 
+pub fn delete_card(
+    cfg: uhppoted::Config,
+    controller: u32,
+    dest: Option<SocketAddrV4>,
+    transport: impl Into<Option<Transport>>,
+    card: u32,
+) {
+    let response = if let Some(addr) = dest {
+        let c = if let Some(t) = transport.into() {
+            Controller::new(controller).with_address(addr).with_transport(t)
+        } else {
+            Controller::new(controller).with_address(addr)
+        };
+
+        uhppoted::delete_card(&cfg, c, card, TIMEOUT)
+    } else {
+        uhppoted::delete_card(&cfg, controller, card, TIMEOUT)
+    };
+
+    match response {
+        Ok(reply) => println!("{:#?}\n", reply),
+        Err(e) => error(e),
+    };
+}
+
 fn error(e: uhppoted::error::Error) {
     println!();
     println!("   *** ERROR: {e}");

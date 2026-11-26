@@ -273,6 +273,18 @@ pub fn put_card_request(
     Ok(packet)
 }
 
+pub fn delete_card_request(controller: u32, card: u32) -> Result<Msg> {
+    let mut packet = [0x00; 64];
+
+    packet[0] = 0x17;
+    packet[1] = 0x52;
+
+    pack_uint32(controller, &mut packet, 4)?;
+    pack_uint32(card, &mut packet, 8)?;
+
+    Ok(packet)
+}
+
 fn pack_uint8(v: u8, packet: &mut Msg, offset: usize) -> Result<()> {
     packet[offset] = v;
     Ok(())

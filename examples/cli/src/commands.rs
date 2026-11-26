@@ -9,6 +9,18 @@ use uhppoted::Transport;
 
 const TIMEOUT: Duration = Duration::from_millis(1250);
 
+fn resolve(id: u32, dest: Option<SocketAddrV4>, transport: Option<Transport>) -> Option<Controller> {
+    if let Some(addr) = dest {
+        if let Some(t) = transport.into() {
+            Some(Controller::new(id).with_address(addr).with_transport(t))
+        } else {
+            Some(Controller::new(id).with_address(addr))
+        }
+    } else {
+        None
+    }
+}
+
 pub fn find_controllers(cfg: uhppoted::Config) {
     match uhppoted::find_controllers(&cfg, TIMEOUT) {
         Ok(list) => {
@@ -24,18 +36,11 @@ pub fn get_controller(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_controller(&cfg, c, TIMEOUT)
-    } else {
-        uhppoted::get_controller(&cfg, controller, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_controller(&cfg, c, TIMEOUT),
+        None => uhppoted::get_controller(&cfg, controller, TIMEOUT),
     };
 
     match response {
@@ -49,21 +54,14 @@ pub fn set_IPv4(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>> + std::fmt::Debug,
+    transport: Option<Transport>,
     address: Ipv4Addr,
     netmask: Ipv4Addr,
     gateway: Ipv4Addr,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::set_IPv4(&cfg, c, address, netmask, gateway, TIMEOUT)
-    } else {
-        uhppoted::set_IPv4(&cfg, controller, address, netmask, gateway, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::set_IPv4(&cfg, c, address, netmask, gateway, TIMEOUT),
+        None => uhppoted::set_IPv4(&cfg, controller, address, netmask, gateway, TIMEOUT),
     };
 
     match response {
@@ -72,22 +70,10 @@ pub fn set_IPv4(
     };
 }
 
-pub fn get_time(
-    cfg: uhppoted::Config,
-    controller: u32,
-    dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
-) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_time(&cfg, c, TIMEOUT)
-    } else {
-        uhppoted::get_time(&cfg, controller, TIMEOUT)
+pub fn get_time(cfg: uhppoted::Config, controller: u32, dest: Option<SocketAddrV4>, transport: Option<Transport>) {
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_time(&cfg, c, TIMEOUT),
+        None => uhppoted::get_time(&cfg, controller, TIMEOUT),
     };
 
     match response {
@@ -100,19 +86,12 @@ pub fn set_time(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     datetime: NaiveDateTime,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::set_time(&cfg, c, datetime, TIMEOUT)
-    } else {
-        uhppoted::set_time(&cfg, controller, datetime, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::set_time(&cfg, c, datetime, TIMEOUT),
+        None => uhppoted::set_time(&cfg, controller, datetime, TIMEOUT),
     };
 
     match response {
@@ -121,22 +100,10 @@ pub fn set_time(
     };
 }
 
-pub fn get_listener(
-    cfg: uhppoted::Config,
-    controller: u32,
-    dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
-) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_listener(&cfg, c, TIMEOUT)
-    } else {
-        uhppoted::get_listener(&cfg, controller, TIMEOUT)
+pub fn get_listener(cfg: uhppoted::Config, controller: u32, dest: Option<SocketAddrV4>, transport: Option<Transport>) {
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_listener(&cfg, c, TIMEOUT),
+        None => uhppoted::get_listener(&cfg, controller, TIMEOUT),
     };
 
     match response {
@@ -149,20 +116,13 @@ pub fn set_listener(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     address: SocketAddrV4,
     interval: Option<u8>,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::set_listener(&cfg, c, address, interval, TIMEOUT)
-    } else {
-        uhppoted::set_listener(&cfg, controller, address, interval, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::set_listener(&cfg, c, address, interval, TIMEOUT),
+        None => uhppoted::set_listener(&cfg, controller, address, interval, TIMEOUT),
     };
 
     match response {
@@ -175,19 +135,12 @@ pub fn get_door(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     door: u8,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_door(&cfg, c, door, TIMEOUT)
-    } else {
-        uhppoted::get_door(&cfg, controller, door, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_door(&cfg, c, door, TIMEOUT),
+        None => uhppoted::get_door(&cfg, controller, door, TIMEOUT),
     };
 
     match response {
@@ -200,21 +153,14 @@ pub fn set_door(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     door: u8,
     mode: u8,
     delay: u8,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::set_door(&cfg, c, door, mode, delay, TIMEOUT)
-    } else {
-        uhppoted::set_door(&cfg, controller, door, mode, delay, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::set_door(&cfg, c, door, mode, delay, TIMEOUT),
+        None => uhppoted::set_door(&cfg, controller, door, mode, delay, TIMEOUT),
     };
 
     match response {
@@ -227,7 +173,7 @@ pub fn set_door_passcodes(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     door: u8,
     passcodes: &str,
 ) {
@@ -236,16 +182,9 @@ pub fn set_door_passcodes(
         .filter_map(|s| s.trim().parse::<u32>().ok())
         .collect();
 
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::set_door_passcodes(&cfg, c, door, pincodes, TIMEOUT)
-    } else {
-        uhppoted::set_door_passcodes(&cfg, controller, door, pincodes, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::set_door_passcodes(&cfg, c, door, pincodes, TIMEOUT),
+        None => uhppoted::set_door_passcodes(&cfg, controller, door, pincodes, TIMEOUT),
     };
 
     match response {
@@ -258,19 +197,12 @@ pub fn open_door(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     door: u8,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::open_door(&cfg, c, door, TIMEOUT)
-    } else {
-        uhppoted::open_door(&cfg, controller, door, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::open_door(&cfg, c, door, TIMEOUT),
+        None => uhppoted::open_door(&cfg, controller, door, TIMEOUT),
     };
 
     match response {
@@ -279,22 +211,10 @@ pub fn open_door(
     };
 }
 
-pub fn get_status(
-    cfg: uhppoted::Config,
-    controller: u32,
-    dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
-) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_status(&cfg, c, TIMEOUT)
-    } else {
-        uhppoted::get_status(&cfg, controller, TIMEOUT)
+pub fn get_status(cfg: uhppoted::Config, controller: u32, dest: Option<SocketAddrV4>, transport: Option<Transport>) {
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_status(&cfg, c, TIMEOUT),
+        None => uhppoted::get_status(&cfg, controller, TIMEOUT),
     };
 
     match response {
@@ -303,22 +223,10 @@ pub fn get_status(
     };
 }
 
-pub fn get_cards(
-    cfg: uhppoted::Config,
-    controller: u32,
-    dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
-) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_cards(&cfg, c, TIMEOUT)
-    } else {
-        uhppoted::get_cards(&cfg, controller, TIMEOUT)
+pub fn get_cards(cfg: uhppoted::Config, controller: u32, dest: Option<SocketAddrV4>, transport: Option<Transport>) {
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_cards(&cfg, c, TIMEOUT),
+        None => uhppoted::get_cards(&cfg, controller, TIMEOUT),
     };
 
     match response {
@@ -331,19 +239,12 @@ pub fn get_card(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     card: u32,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_card(&cfg, c, card, TIMEOUT)
-    } else {
-        uhppoted::get_card(&cfg, controller, card, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_card(&cfg, c, card, TIMEOUT),
+        None => uhppoted::get_card(&cfg, controller, card, TIMEOUT),
     };
 
     match response {
@@ -356,19 +257,12 @@ pub fn get_card_at_index(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     index: u32,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::get_card_at_index(&cfg, c, index, TIMEOUT)
-    } else {
-        uhppoted::get_card_at_index(&cfg, controller, index, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::get_card_at_index(&cfg, c, index, TIMEOUT),
+        None => uhppoted::get_card_at_index(&cfg, controller, index, TIMEOUT),
     };
 
     match response {
@@ -381,7 +275,7 @@ pub fn put_card(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     card: u32,
     start_date: NaiveDate,
     end_date: NaiveDate,
@@ -417,16 +311,9 @@ pub fn put_card(
         first_card: firstcard,
     };
 
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::put_card(&cfg, c, _card, TIMEOUT)
-    } else {
-        uhppoted::put_card(&cfg, controller, _card, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::put_card(&cfg, c, _card, TIMEOUT),
+        None => uhppoted::put_card(&cfg, controller, _card, TIMEOUT),
     };
 
     match response {
@@ -439,19 +326,12 @@ pub fn delete_card(
     cfg: uhppoted::Config,
     controller: u32,
     dest: Option<SocketAddrV4>,
-    transport: impl Into<Option<Transport>>,
+    transport: Option<Transport>,
     card: u32,
 ) {
-    let response = if let Some(addr) = dest {
-        let c = if let Some(t) = transport.into() {
-            Controller::new(controller).with_address(addr).with_transport(t)
-        } else {
-            Controller::new(controller).with_address(addr)
-        };
-
-        uhppoted::delete_card(&cfg, c, card, TIMEOUT)
-    } else {
-        uhppoted::delete_card(&cfg, controller, card, TIMEOUT)
+    let response = match resolve(controller, dest, transport) {
+        Some(c) => uhppoted::delete_card(&cfg, c, card, TIMEOUT),
+        None => uhppoted::delete_card(&cfg, controller, card, TIMEOUT),
     };
 
     match response {

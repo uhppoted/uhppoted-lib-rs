@@ -80,8 +80,14 @@ pub enum Commands {
     DeleteCard(DeleteCardArgs),
 }
 
-#[derive(clap::Args, Debug, Clone, Copy)]
-pub struct TransportArgs {
+#[derive(clap::Args, Debug)]
+pub struct ControllerArgs {
+    #[arg(long)]
+    pub controller: u32,
+
+    #[arg(long)]
+    pub dest: Option<SocketAddrV4>,
+
     #[arg(long, group = "transport")]
     pub tcp: bool,
 
@@ -89,11 +95,11 @@ pub struct TransportArgs {
     pub udp: bool,
 }
 
-impl From<TransportArgs> for Option<Transport> {
-    fn from(args: TransportArgs) -> Self {
-        if args.tcp {
+impl ControllerArgs {
+    pub fn transport(&self) -> Option<Transport> {
+        if self.tcp {
             Some(Transport::Tcp)
-        } else if args.udp {
+        } else if self.udp {
             Some(Transport::Udp)
         } else {
             None
@@ -101,31 +107,40 @@ impl From<TransportArgs> for Option<Transport> {
     }
 }
 
+// #[derive(clap::Args, Debug, Clone, Copy)]
+// pub struct TransportArgs {
+//     #[arg(long, group = "transport")]
+//     pub tcp: bool,
+//
+//     #[arg(long, group = "transport")]
+//     pub udp: bool,
+// }
+//
+// impl From<TransportArgs> for Option<Transport> {
+//     fn from(args: TransportArgs) -> Self {
+//         if args.tcp {
+//             Some(Transport::Tcp)
+//         } else if args.udp {
+//             Some(Transport::Udp)
+//         } else {
+//             None
+//         }
+//     }
+// }
+
 #[derive(clap::Args, Debug)]
 pub struct FindControllerArgs {}
 
 #[derive(clap::Args, Debug)]
 pub struct GetControllerArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct SetIPv4Args {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub address: Ipv4Addr,
@@ -139,50 +154,26 @@ pub struct SetIPv4Args {
 
 #[derive(clap::Args, Debug)]
 pub struct GetTimeArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct SetTimeArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct GetListenerArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct SetListenerArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub address: SocketAddrV4,
@@ -193,14 +184,8 @@ pub struct SetListenerArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct GetDoorArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub door: u8,
@@ -208,14 +193,8 @@ pub struct GetDoorArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct SetDoorArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub door: u8,
@@ -229,14 +208,8 @@ pub struct SetDoorArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct SetDoorPasscodesArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub door: u8,
@@ -247,14 +220,8 @@ pub struct SetDoorPasscodesArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct OpenDoorArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub door: u8,
@@ -262,38 +229,20 @@ pub struct OpenDoorArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct GetStatusArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct GetCardsArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 }
 
 #[derive(clap::Args, Debug)]
 pub struct GetCardArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub card: u32,
@@ -301,14 +250,8 @@ pub struct GetCardArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct GetCardAtIndexArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub index: u32,
@@ -316,14 +259,8 @@ pub struct GetCardAtIndexArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct PutCardArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub card: u32,
@@ -346,14 +283,8 @@ pub struct PutCardArgs {
 
 #[derive(clap::Args, Debug)]
 pub struct DeleteCardArgs {
-    #[arg(long)]
-    pub controller: u32,
-
-    #[arg(long)]
-    pub dest: Option<SocketAddrV4>,
-
     #[command(flatten)]
-    pub transport: TransportArgs,
+    pub controller: ControllerArgs,
 
     #[arg(long)]
     pub card: u32,
@@ -421,6 +352,7 @@ impl Commands {
             "get-card",
             "get-card-at-index",
             "put-card",
+            "delete-card",
         ]
     }
 }
@@ -433,7 +365,12 @@ impl FindControllerArgs {
 
 impl GetControllerArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_controller(cfg, self.controller, self.dest, self.transport);
+        commands::get_controller(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+        );
     }
 }
 
@@ -441,9 +378,9 @@ impl SetIPv4Args {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::set_IPv4(
             cfg,
-            self.controller,
-            self.dest,
-            self.transport,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
             self.address,
             self.netmask,
             self.gateway,
@@ -453,7 +390,12 @@ impl SetIPv4Args {
 
 impl GetTimeArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_time(cfg, self.controller, self.dest, self.transport);
+        commands::get_time(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+        );
     }
 }
 
@@ -461,13 +403,24 @@ impl SetTimeArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         let datetime = Local::now().naive_local();
 
-        commands::set_time(cfg, self.controller, self.dest, self.transport, datetime);
+        commands::set_time(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+            datetime,
+        );
     }
 }
 
 impl GetListenerArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_listener(cfg, self.controller, self.dest, self.transport);
+        commands::get_listener(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+        );
     }
 }
 
@@ -475,9 +428,9 @@ impl SetListenerArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::set_listener(
             cfg,
-            self.controller,
-            self.dest,
-            self.transport,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
             self.address,
             self.interval,
         );
@@ -486,7 +439,13 @@ impl SetListenerArgs {
 
 impl GetDoorArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_door(cfg, self.controller, self.dest, self.transport, self.door);
+        commands::get_door(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+            self.door,
+        );
     }
 }
 
@@ -494,9 +453,9 @@ impl SetDoorArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::set_door(
             cfg,
-            self.controller,
-            self.dest,
-            self.transport,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
             self.door,
             self.mode,
             self.delay,
@@ -508,9 +467,9 @@ impl SetDoorPasscodesArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::set_door_passcodes(
             cfg,
-            self.controller,
-            self.dest,
-            self.transport,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
             self.door,
             &self.passcodes,
         );
@@ -519,31 +478,59 @@ impl SetDoorPasscodesArgs {
 
 impl OpenDoorArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::open_door(cfg, self.controller, self.dest, self.transport, self.door);
+        commands::open_door(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+            self.door,
+        );
     }
 }
 
 impl GetStatusArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_status(cfg, self.controller, self.dest, self.transport);
+        commands::get_status(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+        );
     }
 }
 
 impl GetCardsArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_cards(cfg, self.controller, self.dest, self.transport);
+        commands::get_cards(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+        );
     }
 }
 
 impl GetCardArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_card(cfg, self.controller, self.dest, self.transport, self.card);
+        commands::get_card(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+            self.card,
+        );
     }
 }
 
 impl GetCardAtIndexArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::get_card_at_index(cfg, self.controller, self.dest, self.transport, self.index);
+        commands::get_card_at_index(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+            self.index,
+        );
     }
 }
 
@@ -551,9 +538,9 @@ impl PutCardArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
         commands::put_card(
             cfg,
-            self.controller,
-            self.dest,
-            self.transport,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
             self.card,
             self.start_date,
             self.end_date,
@@ -566,6 +553,12 @@ impl PutCardArgs {
 
 impl DeleteCardArgs {
     pub fn handle(&self, cfg: uhppoted::Config) {
-        commands::delete_card(cfg, self.controller, self.dest, self.transport, self.card);
+        commands::delete_card(
+            cfg,
+            self.controller.controller,
+            self.controller.dest,
+            self.controller.transport(),
+            self.card,
+        );
     }
 }

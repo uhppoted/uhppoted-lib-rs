@@ -18,7 +18,7 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [ ] docstrings
 
 - [ ] CLI
-    - [ ] clean up/restructure
+    - [x] clean up/restructure
     - [ ] --debug: set log level
     - (?) only log if debug
 
@@ -43,6 +43,8 @@ cf. https://codeberg.org/uhppoted/uhppoted/issues/12
 - [ ] event reasons enum
 - [ ] event directions enum
 - [ ] door mode enum
+- (?) move decode interface to decode.rs
+- (?) decode functions to codec.rs
 
 - [x] find-controllers
 - [x] get-controller
